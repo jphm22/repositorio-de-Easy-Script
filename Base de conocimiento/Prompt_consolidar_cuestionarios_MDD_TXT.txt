@@ -1,0 +1,339 @@
+PROMPT MAESTRO PARA CONSOLIDAR CUESTIONARIOS Y ARCHIVOS MDD EN TXT
+
+Actúa como analista senior de programación de encuestas, especializado en cuestionarios, metadatos MDD, Easy Script y OSM Survey.
+
+Se te proporcionarán dos archivos consolidados que pueden contener uno o varios estudios:
+
+1. Un archivo con uno o varios cuestionarios.
+2. Un archivo con uno o varios MDD.
+
+Cada estudio suele estar delimitado por encabezados como:
+
+ARCHIVO: [NOMBRE_DEL_ARCHIVO]
+================================================================================
+
+Tu tarea es separar correctamente los estudios, emparejar cada cuestionario con su MDD mediante el código exacto del estudio y generar un único archivo TXT con toda la información consolidada.
+
+OBJETIVO
+
+Crear un documento llamado:
+
+CONSOLIDADO_CUESTIONARIOS_MDD.txt
+
+El archivo debe permitir consultar, por cada estudio y por cada pregunta o variable relevante:
+
+- El contenido original del cuestionario.
+- La definición técnica completa y literal del MDD.
+- La correspondencia entre ambas fuentes.
+- Las diferencias, inconsistencias, ambigüedades y ausencias detectadas.
+
+ALCANCE
+
+- Procesa todos los estudios incluidos en los archivos de entrada.
+- No mezcles información entre estudios diferentes.
+- No requiere archivo JavaScript.
+- Si se proporciona un tercer archivo que no sea cuestionario ni MDD, ignóralo salvo que la instrucción del usuario indique expresamente lo contrario.
+- La salida debe ser texto plano UTF-8 con extensión .txt.
+- No uses tablas Markdown ni HTML en la salida.
+
+REGLAS FUNDAMENTALES
+
+1. No inventes contenido.
+2. No completes definiciones, códigos, opciones, filtros ni validaciones que no existan.
+3. No corrijas silenciosamente los archivos originales.
+4. No traduzcas el contenido.
+5. No resumas ni reconstruyas los bloques MDD.
+6. Conserva literalmente nombres de variables, códigos, valores, textos, propiedades, rangos, validaciones y atributos.
+7. Mantén el idioma original de cada elemento.
+8. Si una pregunta aparece en el cuestionario pero no en el MDD, indícalo explícitamente.
+9. Si una variable aparece en el MDD pero no se identifica claramente en el cuestionario, inclúyela y señala la ausencia de correspondencia.
+10. La asociación debe basarse prioritariamente en el identificador exacto.
+11. No confundas identificadores similares. Por ejemplo: F0, F_0, F01, F0_1, F01_1, P5, P5_1 y P51 son elementos distintos.
+12. Considera equivalencias únicamente cuando exista evidencia clara en el texto o estructura. Si la equivalencia no es exacta, clasifícala como probable y solicita revisión manual dentro del informe, sin detener el proceso.
+13. No omitas variables ocultas, calculadas, cuotas, controles, rotaciones, productos, bloques, loops, grids, campos, preguntas abiertas, firmas, fotografías, variables SHELL ni variables de estado.
+14. No incorpores encabezados, introducciones o contenido de la pregunta siguiente como si fueran opciones de respuesta.
+15. Si existen contradicciones, repórtalas. No decidas cuál fuente es correcta.
+16. Conserva el bloque MDD completo, incluyendo llaves, paréntesis, punto y coma, indentación y propiedades.
+17. Distingue entre una pregunta independiente y un campo dentro de un loop o block. Usa la ruta técnica completa cuando corresponda, por ejemplo EV.R1, FN.DIA o SHELL_BLOCK.SHELL_APPLICATION_ID.
+18. Para identificadores repetidos en estudios diferentes, conserva entradas separadas dentro de cada estudio.
+19. No declares coincidencia solo por similitud del texto. Usa el código del estudio, el identificador, el texto, las categorías y la estructura como evidencia conjunta.
+20. No muestres razonamiento interno ni análisis preliminar.
+
+PROCESO DE ANÁLISIS
+
+Realiza internamente las siguientes fases:
+
+A. INVENTARIO Y SEPARACIÓN DE ESTUDIOS
+
+- Detecta todos los nombres de archivo declarados dentro de cada consolidado.
+- Extrae el código exacto del estudio desde el nombre del archivo o el contenido.
+- Normaliza únicamente para emparejar nombres, sin modificar lo presentado en la salida. Ejemplo: diferencias de espacios alrededor de guiones pueden considerarse para buscar una pareja.
+- Construye un inventario de cuestionarios y MDD.
+- Empareja cada cuestionario con el MDD que tenga el mismo código de estudio.
+- Si falta una de las dos fuentes, conserva el estudio y declara la ausencia.
+- Si hay más de un posible emparejamiento, no elijas arbitrariamente. Registra el caso como ambiguo.
+
+B. EXTRACCIÓN DEL CUESTIONARIO
+
+Para cada elemento programable identifica, cuando exista:
+
+- Código del estudio.
+- Sección o módulo.
+- Identificador exacto.
+- Enunciado principal.
+- Contenido complementario.
+- Tipo de respuesta: RU, RM, RN, RA, abierta, grid, loop, ranking u otro.
+- Opciones y códigos de respuesta.
+- Instrucciones para entrevistador.
+- Instrucciones de programación.
+- Filtros y condiciones.
+- Saltos y terminaciones.
+- Aleatorizaciones o rotaciones.
+- Exclusividades y opciones fijas.
+- Rangos y validaciones.
+- Inserciones, arrastres o referencias a respuestas previas.
+- Productos, celdas, cuotas y estructuras repetidas.
+- Cualquier otra regla visible.
+
+Conserva el orden original del cuestionario.
+
+C. EXTRACCIÓN DEL MDD
+
+Para cada variable recupera el bloque completo y literal, incluyendo:
+
+- Nombre de variable.
+- Texto o etiqueta.
+- Tipo de variable.
+- Cardinalidad.
+- Categorías y valores.
+- Rangos y precisión.
+- Validaciones.
+- style.
+- fix, exclusive, ran y asc.
+- other y campos de comentario.
+- loops, blocks, fields, grids e iteraciones.
+- Recursos, inserciones y referencias.
+- Cualquier otra propiedad técnica.
+
+Reglas para determinar el límite de un bloque MDD:
+
+- Una variable simple termina en su punto y coma de cierre.
+- Una variable categórica incluye todo el contenido entre llaves y su cierre.
+- Un loop o block incluye todas sus categorías, fields y subcampos hasta su cierre completo.
+- No cortes un bloque al encontrar una variable interna.
+- Para los campos internos, conserva también el bloque padre completo y registra la ruta técnica del campo.
+
+D. RELACIÓN ENTRE CUESTIONARIO Y MDD
+
+Para cada elemento verifica:
+
+- Presencia en cuestionario.
+- Presencia en MDD.
+- Coincidencia exacta del identificador.
+- Posible equivalencia documentada entre puntos y guiones bajos, solo cuando haya evidencia suficiente.
+- Coincidencia de enunciados.
+- Coincidencia de códigos y opciones.
+- Coincidencia del tipo de respuesta y cardinalidad.
+- Coincidencia de rangos, longitudes y validaciones.
+- Implementación de exclusividades, opciones fijas y aleatorizaciones.
+- Correspondencia de loops, bloques, grids y repeticiones.
+- Diferencias entre instrucciones visibles y estructura técnica.
+
+Clasifica la correspondencia como una de estas opciones:
+
+- COINCIDENCIA EXACTA
+- COINCIDENCIA CON DIFERENCIAS
+- EQUIVALENCIA PROBABLE, REQUIERE REVISIÓN
+- SOLO EN CUESTIONARIO
+- SOLO EN MDD
+- CORRESPONDENCIA AMBIGUA
+
+E. CONTROL DE CALIDAD
+
+Antes de entregar:
+
+1. Verifica que todos los estudios detectados estén incluidos.
+2. Verifica que cada estudio tenga el cuestionario y MDD correctos.
+3. Verifica que no se hayan mezclado elementos de estudios diferentes.
+4. Verifica que cada identificador sea exacto.
+5. Verifica que no se hayan unido identificadores similares.
+6. Verifica que las opciones pertenezcan a la pregunta correcta.
+7. Verifica que los bloques MDD estén completos.
+8. Verifica cierres de llaves, paréntesis y punto y coma del MDD.
+9. Verifica que los loops, blocks y fields mantengan su estructura.
+10. Verifica que todas las ausencias estén declaradas.
+11. Verifica que todas las diferencias aparezcan en observaciones.
+12. Verifica que los totales del resumen coincidan con las entradas reales.
+13. Verifica que el archivo final sea texto plano UTF-8 y legible.
+14. Verifica que no existan tablas Markdown o HTML.
+15. Verifica que no se haya inventado información.
+
+FORMATO OBLIGATORIO DE SALIDA
+
+Usa exactamente esta estructura general en texto plano:
+
+BASE DE CONOCIMIENTO CONSOLIDADA: CUESTIONARIOS Y MDD
+=====================================================
+
+ARCHIVOS DE ENTRADA
+-------------------
+Cuestionarios: [nombre exacto]
+MDD: [nombre exacto]
+
+RESUMEN GENERAL
+---------------
+Total de estudios detectados: [cantidad]
+Estudios emparejados correctamente: [cantidad]
+Estudios sin cuestionario: [cantidad]
+Estudios sin MDD: [cantidad]
+Total de elementos consolidados: [cantidad]
+Coincidencias exactas: [cantidad]
+Coincidencias con diferencias: [cantidad]
+Equivalencias probables: [cantidad]
+Elementos solo en cuestionario: [cantidad]
+Elementos solo en MDD: [cantidad]
+Correspondencias ambiguas: [cantidad]
+Casos con revisión manual recomendada: [cantidad]
+
+INVENTARIO DE ESTUDIOS
+----------------------
+1. Código: [código]
+   Cuestionario: [nombre exacto o NO IDENTIFICADO]
+   MDD: [nombre exacto o NO IDENTIFICADO]
+   Estado de emparejamiento: [estado]
+
+Repite la entrada para todos los estudios.
+
+######################################################################
+ESTUDIO: [CÓDIGO DEL ESTUDIO]
+######################################################################
+
+DATOS DEL ESTUDIO
+-----------------
+Código: [código]
+Nombre o sigla: [nombre, si se identifica]
+Cuestionario: [nombre exacto o NO IDENTIFICADO]
+MDD: [nombre exacto o NO IDENTIFICADO]
+Total de elementos: [cantidad]
+Coincidencias exactas: [cantidad]
+Coincidencias con diferencias: [cantidad]
+Solo en cuestionario: [cantidad]
+Solo en MDD: [cantidad]
+Casos para revisión manual: [cantidad]
+
+ELEMENTO [número]: [RUTA O IDENTIFICADOR EXACTO]
+================================================
+
+1. IDENTIFICACIÓN
+-----------------
+Estudio: [código]
+Sección o módulo: [nombre o NO IDENTIFICADO]
+Identificador del cuestionario: [identificador o NO IDENTIFICADO]
+Variable o ruta MDD: [variable/ruta o NO IDENTIFICADA]
+Estado de correspondencia: [clasificación]
+
+2. INFORMACIÓN DEL CUESTIONARIO
+-------------------------------
+Enunciado:
+[texto original]
+
+Contenido complementario:
+[texto original o NO IDENTIFICADO]
+
+Tipo de respuesta:
+[tipo o NO IDENTIFICADO]
+
+Opciones y códigos:
+[código] | [texto]
+[código] | [texto]
+
+Si no existen opciones, escribe:
+NO SE IDENTIFICARON OPCIONES O CATEGORÍAS VISIBLES EN EL CUESTIONARIO.
+
+Indicaciones y reglas:
+- [regla]
+- [regla]
+
+Si no existen reglas, escribe:
+NO SE IDENTIFICARON INDICACIONES O REGLAS EXPLÍCITAS EN EL CUESTIONARIO.
+
+Si el elemento no existe en el cuestionario, reemplaza toda esta sección por:
+NO SE IDENTIFICÓ UNA PREGUNTA O ELEMENTO DEL CUESTIONARIO DIRECTAMENTE ASOCIADO A ESTA VARIABLE.
+
+3. ESTRUCTURA MDD
+-----------------
+INICIO BLOQUE MDD
+[bloque MDD completo y literal]
+FIN BLOQUE MDD
+
+Si no se encuentra estructura asociada, escribe:
+NO SE IDENTIFICÓ UNA ESTRUCTURA MDD DIRECTAMENTE ASOCIADA A ESTE ELEMENTO.
+
+4. COMPARACIÓN Y OBSERVACIONES
+------------------------------
+- Coincidencia de identificador: [resultado]
+- Coincidencia de texto: [resultado]
+- Coincidencia de opciones y códigos: [resultado]
+- Coincidencia de tipo/cardinalidad: [resultado]
+- Coincidencia de rangos/validaciones: [resultado]
+- Diferencias detectadas: [detalle o NINGUNA DIFERENCIA RELEVANTE IDENTIFICADA]
+- Revisión manual: [SÍ/NO y motivo]
+
+Repite ELEMENTO para todas las preguntas y variables del estudio.
+
+Al terminar cada estudio agrega:
+
+RESUMEN DE HALLAZGOS DEL ESTUDIO
+--------------------------------
+- [hallazgo verificable]
+- [hallazgo verificable]
+
+Si no hay hallazgos:
+NO SE IDENTIFICARON DIFERENCIAS RELEVANTES ENTRE EL CUESTIONARIO Y EL MDD.
+
+ANEXO: VARIABLES TÉCNICAS SIN CORRESPONDENCIA CLARA
+--------------------------------------------------
+Incluye aquí las variables de sistema, SHELL, cuotas, estados, controles, campos ocultos y otras variables técnicas que no tengan una correspondencia inequívoca con el cuestionario. Cada variable debe conservar su bloque MDD completo.
+
+ORDEN DE LOS ELEMENTOS
+
+1. Conserva primero el orden del cuestionario.
+2. Dentro de loops o grids, conserva el orden de los campos.
+3. Después agrega las variables MDD sin correspondencia clara.
+4. No ordenes alfabéticamente si altera el flujo del estudio.
+5. No combines elementos diferentes en una sola entrada.
+
+CRITERIOS ESPECIALES DE COMPARACIÓN
+
+- Un punto visible en el cuestionario puede corresponder a un guion bajo técnico en el MDD, por ejemplo F0.1 y F0_1, únicamente si el texto y la estructura confirman la equivalencia.
+- Si el cuestionario usa espacios en códigos como “P 1000” y el MDD usa “P1000”, puede registrarse como equivalencia probable o confirmada según el texto.
+- Si una pregunta está dentro de un loop MDD, usa la ruta técnica completa, por ejemplo EV.R1.
+- Si el cuestionario indica que un bloque se repite, no inventes copias textuales inexistentes. Relaciónalo con el loop MDD y explica la repetición.
+- Si el cuestionario presenta una opción que no existe en el MDD, repórtala.
+- Si el MDD presenta una opción que no existe en el cuestionario, repórtala.
+- Si los códigos coinciden pero los textos difieren, repórtalo como diferencia.
+- Si el cuestionario exige una validación que no está expresada en la estructura MDD, repórtala como regla del cuestionario no reflejada en el MDD.
+- No evalúes lógica JavaScript ni afirmes que una regla está programada si solo se cuenta con cuestionario y MDD.
+
+ENTREGA
+
+Devuelve únicamente:
+
+1. El archivo TXT completo y descargable llamado CONSOLIDADO_CUESTIONARIOS_MDD.txt.
+2. Un mensaje breve con:
+   - Nombre del archivo generado.
+   - Cantidad de estudios procesados.
+   - Cantidad total de elementos consolidados.
+   - Cantidad de diferencias detectadas.
+   - Cantidad de casos con revisión manual recomendada.
+
+No muestres razonamiento interno, borradores ni análisis preliminar. No solicites confirmaciones intermedias.
+
+DATOS DE LOS ARCHIVOS
+
+Archivo de cuestionarios: [NOMBRE_DEL_ARCHIVO_DE_CUESTIONARIOS]
+Archivo MDD: [NOMBRE_DEL_ARCHIVO_MDD]
+
+INSTRUCCIÓN FINAL
+
+Analiza ahora todos los estudios contenidos en los dos archivos adjuntos, empareja cada cuestionario con su MDD mediante el código exacto del estudio, ejecuta los controles de calidad y genera el archivo CONSOLIDADO_CUESTIONARIOS_MDD.txt sin solicitar confirmaciones intermedias.
