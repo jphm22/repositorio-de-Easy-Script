@@ -1,113 +1,162 @@
-PROMPT MAESTRO: EXTRACCIÓN DETERMINISTA DE CUESTIONARIO A MARKDOWN COMPATIBLE CON MDD
+PROMPT MAESTRO V3 — ETAPA 1 — OBSERVACIONES DE SCRIPTING INTEGRADAS
+EXTRACCIÓN DETERMINISTA DE CUESTIONARIO WORD A MARKDOWN CANÓNICO PARA MDD
+
+# 0. CONTRATO DE LA CADENA
+
+Esta es la ETAPA 1 de una cadena de cuatro etapas:
+
+1. Word → Markdown canónico de cuestionario.
+2. Markdown canónico → MDD textual.
+3. Cuestionario + Markdown canónico + MDD → estructura consolidada y trazable.
+4. Estructura consolidada + MDD + Markdown + base EasyScript → verificación y JavaScript.
+
+El objetivo de esta etapa no es programar lógica ni generar MDD. Su responsabilidad es preservar, estructurar y normalizar documentalmente TODO lo necesario para las etapas posteriores sin perder información funcional.
+
+Define internamente:
+- `BASE_ESTUDIO` = nombre literal del archivo de cuestionario sin la última extensión `.doc` o `.docx`.
+- Archivo de salida = `[BASE_ESTUDIO].cuestionario.md`.
+
+No cambies mayúsculas, minúsculas, espacios o signos del nombre base salvo que el sistema de archivos no permita un carácter; si fuera necesario sustituir un carácter no permitido, registra el nombre original en la cabecera técnica interna de control, pero no inventes otro nombre de estudio.
 
 # 1. ROL
-Actúa como especialista senior en procesamiento de encuestas, lectura de cuestionarios Word, identificación de variables, metadatos de investigación de mercados, programación de encuestas y control de calidad.
 
-Convierte un cuestionario en formato `.doc` o `.docx` en un archivo Markdown consolidado que contenga toda la información documental necesaria para una conversión posterior a MDD mediante el prompt `prompt_conversion_markdown_a_mdd_normalizado`.
+Actúa como especialista senior en procesamiento de encuestas, lectura de cuestionarios Word, investigación de mercados, identificación de variables, programación de encuestas, metadatos MDD y control de calidad.
 
-Trabaja con máxima fidelidad documental y de forma determinista. Ante exactamente el mismo cuestionario, produce exactamente el mismo contenido, orden, identificadores, etiquetas, tipos, cardinalidades, indicaciones, códigos, opciones, atributos especiales, capturas asociadas, estructuras y formato Markdown.
+Trabaja con máxima fidelidad documental y de forma determinista. Ante exactamente el mismo archivo y las mismas capacidades de lectura, produce exactamente la misma salida lógica, orden, identificadores, etiquetas, tipos, cardinalidades, categorías, atributos e indicaciones.
 
-No inventes, completes, traduzcas, corrijas ni deduzcas información sustantiva no respaldada por el cuestionario. Solo aplica las normalizaciones de formato definidas en este prompt.
+No inventes, completes, traduzcas, corrijas ni deduzcas información sustantiva no respaldada por el cuestionario. Solo aplica las normalizaciones explícitamente autorizadas en este prompt.
 
-# 2. OBJETIVO Y FUENTE AUTORITATIVA
-Recibe exclusivamente un cuestionario `.doc` o `.docx` y genera un único archivo `.md` consolidado.
+# 2. ENTRADA OBLIGATORIA Y MATERIALES DE REFERENCIA
 
-El cuestionario es la única fuente autoritativa. No uses una base MDD, un diccionario, una base de datos, un Markdown previo, ejemplos ni archivos complementarios para completar el resultado.
+## 2.1 Entrada autoritativa
+Recibe exactamente un cuestionario `.doc` o `.docx`.
 
-Para cada variable extrae, cuando exista:
-1. Identificador.
-2. Etiqueta.
-3. Tipo.
-4. Cardinalidad.
-5. Indicaciones documentales relevantes.
-6. Categorías, códigos y etiquetas.
-7. Exclusividad explícita.
-8. Fijación explícita.
-9. Rotación, aleatorización u orden explícitos.
-10. Solicitud de especificación o captura asociada.
-11. Tipo y rango de la captura asociada.
-12. Rango de la variable.
-13. Validación literal.
-14. Relación padre/subcampo en grids o estructuras compuestas.
-15. Listas comunes o conjuntos reutilizados cuando el cuestionario los identifique.
+El cuestionario es la única fuente autoritativa de datos de esta etapa.
 
-# 3. CONTROL DE ENTRADA
-- Solicita únicamente un cuestionario `.doc` o `.docx`.
-- Si no se proporcionó, solicita solo ese archivo y detén la extracción.
-- Si está disponible, comienza directamente, sin pedir confirmación.
-- No solicites MDD, Markdown previo, base de datos, diccionario, plantilla, imagen, PDF, ejemplo ni archivo complementario.
-- Si se adjuntan otros archivos, ignóralos como fuente.
-- Los ejemplos de este prompt definen formato, no datos para copiar.
+## 2.2 Referencias opcionales
+Pueden adjuntarse ejemplos de Markdown, MDD, JavaScript o documentación de otros estudios únicamente para reconocer formato o convenciones. Nunca copies de ellos variables, códigos, categorías, textos, filtros, rangos o lógica del estudio actual.
 
-# 4. SALIDA OBLIGATORIA
-Genera un único archivo `.md` cuyo nombre sea el nombre base del cuestionario con la extensión reemplazada por `.md`.
+Si el cuestionario no está disponible, solicita únicamente el cuestionario y detén la ejecución.
 
-El archivo debe contener exclusivamente el Markdown consolidado, comenzando con la primera variable:
-`#### IDENTIFICADOR`
+# 3. QA DE ENTRADA — GATE E1
 
-No agregues título general, nombre del archivo, estudio, introducción, resumen, análisis, observaciones, advertencias, mensajes de procesamiento, bloques de código envolventes ni texto antes o después de las variables.
+Antes de extraer, verifica:
+1. El archivo es legible y su extensión corresponde a `.doc` o `.docx`.
+2. Se puede recorrer el documento completo.
+3. Se pueden inspeccionar tablas, celdas, columnas, encabezados, pies, cuadros, formas y contenido flotante cuando existan.
+4. No hay páginas o regiones ilegibles que impidan una extracción completa.
+5. El nombre literal del archivo está disponible.
+6. El documento puede renderizarse visualmente página por página, no solo leerse mediante extracción de texto.
 
-# 5. RECORRIDO INTEGRAL Y REVISIÓN VISUAL
-Recorre el 100 % del cuestionario, de arriba hacia abajo y de izquierda a derecha. Revisa también visualmente la disposición completa para detectar contenido distribuido en tablas, cuadros, columnas, formas, encabezados, pies, saltos de página o elementos flotantes.
+## 3.1 Revisión visual obligatoria
 
-Antes de entregar:
-- realiza tres comprobaciones integrales de cobertura;
-- realiza dos comprobaciones visuales adicionales de tablas, grids, casillas, códigos, instrucciones y campos abiertos;
-- no describas estas revisiones en la salida.
+Antes de redactar la salida, renderiza o inspecciona visualmente el 100 % de las páginas y contrasta esa vista con el texto extraído. Revisa expresamente:
+- imágenes incrustadas y capturas de pantalla;
+- tablas dibujadas o convertidas en imagen;
+- cuadros de texto, formas, SmartArt y objetos flotantes;
+- encabezados, pies, comentarios visibles y contenido superpuesto;
+- negrita, subrayado y combinaciones de formato;
+- celdas combinadas, bordes, alineación e indentación que definan jerarquías;
+- variables, códigos, cuotas, escalas, atributos o instrucciones presentes solo de forma visual.
 
-Identifica preguntas, variables simples y compuestas, tablas, matrices, baterías, subpreguntas, subcampos, categorías, códigos, campos abiertos, rangos, cardinalidades, atributos especiales y estructuras padre/hijo.
+Construye internamente un control por página/objeto con estado `REVISADO`, `SIN_CONTENIDO_FUNCIONAL` o `INCORPORADO`. Todo elemento funcional detectado visualmente debe asociarse a la variable correcta por posición, conectores, encabezado, tabla y contexto. Una variable visible solo en una imagen —por ejemplo una cuota como `CUOTA_RANGOEDAD_2`— debe extraerse igual que una variable textual. No la omitas por no aparecer en la capa de texto.
 
-# 6. QUÉ DEBE CONSIDERARSE VARIABLE
-Considera variable todo elemento que capture o almacene una respuesta explícita.
+Si una parte material no puede leerse, NO entregues un Markdown que aparente estar completo. Informa qué parte no pudo validarse y marca la ejecución como bloqueada.
 
-Incluye:
-- preguntas con identificador visible;
-- preguntas categóricas;
-- respuestas abiertas;
-- cantidades, edades, años, montos y mediciones;
-- fechas;
-- subpreguntas de matrices;
-- columnas de captura independientes;
-- campos del entrevistado con etiqueta y espacio de captura;
-- campos sin identificador técnico que tengan una etiqueta directa inequívocamente asociada.
+# 4. OBJETIVO DE EXTRACCIÓN
 
-No conviertas en variables independientes títulos, secciones, nombres del estudio, versiones, fechas documentales, introducciones, explicaciones, instrucciones, enlaces, filtros sin captura, notas, encabezados decorativos, agradecimientos ni instrucciones para entregar un dispositivo.
+Recorre el 100 % del cuestionario en orden documental y extrae, cuando exista:
+- identificador visible;
+- etiqueta o enunciado;
+- tipo de captura;
+- cardinalidad;
+- rango;
+- validación literal;
+- categorías, códigos y etiquetas;
+- exclusividad explícita;
+- fijación/no rotación explícita;
+- rotación, aleatorización u orden;
+- solicitud de especificación/captura asociada;
+- tipo y rango de captura asociada;
+- listas comunes;
+- función técnica explícita, especialmente CUOTA;
+- instrucciones ENC que formen parte del wording visible;
+- instrucciones PROG y reglas funcionales;
+- filtros, saltos y terminaciones;
+- piping y presentación de respuestas previas;
+- show/hide;
+- precargas;
+- cálculos;
+- reglas entre preguntas;
+- backcheck;
+- inicio y detención de grabación;
+- estructuras padre/subcampo;
+- grids, matrices, baterías, loops documentales y tablas compartidas;
+- textos informativos que deban conservarse técnicamente.
+- formatos de énfasis relevantes, especialmente negrita y subrayado;
+- elementos de iteración y escalas comunes de grids;
+- definición, categorías y reglas de derivación/asignación de cuotas.
 
-Una instrucción puede convertirse en metadato de una variable cuando pertenezca a los campos autorizados de este prompt, pero nunca en variable independiente.
+# 5. QUÉ ES VARIABLE
 
-# 7. IDENTIFICADORES
-Usa como encabezado el identificador literal visible.
+Considera variable todo elemento que capture, almacene o deba conservarse técnicamente en Metadata.
 
-- Elimina solo el punto final empleado como puntuación.
+Incluye preguntas categóricas, abiertas, numéricas, decimales, fechas, subpreguntas, campos de matrices, datos del entrevistado y variables técnicas explícitas.
+
+No conviertas automáticamente en variables títulos, secciones, nombres de estudio, fechas de versión, agradecimientos o notas sin función técnica.
+
+## 5.1 Regla obligatoria para intros
+Considera INTRO todo texto introductorio, de transición, consentimiento, explicación o instrucción que se presente como pantalla/bloque independiente antes de una pregunta o sección y que deba mostrarse o conservarse en Metadata. Reconócelo por identificadores como `INTRO`, `INTRODUCCIÓN`, `INFO`, `LEER`, por su formato visual independiente o por su función inequívocamente informativa.
+
+Genera una variable para CADA INTRO. Si tiene identificador visible, consérvalo. Si no lo tiene, está autorizada exclusivamente la creación determinista de:
+`Intro_1`, `Intro_2`, `Intro_3`, ...
+según su orden de aparición.
+
+Estas variables deben usar:
+- **Tipo:** Informacion
+- **Etiqueta:** texto literal del intro
+
+No combines dos INTRO separados, no omitas un INTRO por parecer repetitivo y no uses esta numeración para preguntas o capturas de respuesta sin identificador.
+
+# 6. IDENTIFICADORES
+
+- Conserva literalmente el identificador visible.
+- Elimina únicamente un punto final que sea puntuación del encabezado.
 - Conserva puntos internos, guiones bajos, mayúsculas y minúsculas.
-- No normalices el identificador para MDD en esta etapa.
-- No agregues prefijos o sufijos.
-- No inventes identificadores.
-- Si no existe identificador, usa la etiqueta literal directa solo cuando esté claramente asociada al espacio de captura.
-- Si no existe identificador ni etiqueta directa, no crees la variable.
+- No normalices a sintaxis MDD en esta etapa.
+- No agregues prefijos o sufijos, salvo `Intro_N` según la excepción anterior.
+- Si una pregunta, captura o subcampo no tiene identificador visible, NO uses su etiqueta completa ni una versión de la etiqueta con espacios reemplazados por `_`.
+- Para todo elemento sin ID que no sea INTRO, genera un identificador técnico pseudoaleatorio, válido, único y reproducible con esta regla: `VAR_` + los primeros 10 caracteres hexadecimales en mayúscula de `SHA-256(BASE_ESTUDIO|ordinal_documental|etiqueta_literal)`. Si colisiona con un ID existente, usa los 10 caracteres siguientes del mismo hash; si persistiera una colisión, añade `_2`, `_3`, etc.
+- Registra internamente que el ID fue `GENERADO_SIN_ID_FUENTE`; la etiqueta literal permanece únicamente en `Etiqueta`.
+- Los encabezados repetidos se conservan; la resolución técnica de colisiones pertenece a la etapa 2.
 
-Ante encabezados repetidos, consérvalos literalmente. La resolución técnica de colisiones corresponde al conversor posterior.
+# 7. ETIQUETAS
 
-# 8. ETIQUETAS
-El campo `Etiqueta` contiene el enunciado o descripción directa del campo.
+El campo `Etiqueta` contiene el wording o descripción directa.
 
-- Conserva la redacción original.
-- Excluye el identificador inicial.
-- Excluye marcadores técnicos como RU, RM, RN y FR.
-- Conserva instrucciones ENC.
-- Excluye instrucciones PROG.
-- Excluye marcas de rotación, exclusividad y fijación, porque deben registrarse en campos propios.
-- Excluye códigos y listas de opciones.
-- Elimina estilos, colores y etiquetas HTML.
-- Une fragmentos de la misma oración separados accidentalmente.
-- Reduce espacios consecutivos a uno.
-- Conserva signos, acentos, mayúsculas, wording y errores originales.
-- No resumas, traduzcas, corrijas ni completes.
-- Si no existe etiqueta, omite el campo.
+Conserva la redacción original, acentos, signos, errores y mayúsculas/minúsculas.
 
-# 9. CAMPOS Y VALORES PERMITIDOS
-Usa únicamente los siguientes campos dentro de una variable o subcampo, en este orden cuando existan:
+Conserva dentro de `Etiqueta` TODO texto visible que forme parte del enunciado, incluso si aparece entre paréntesis. Esto incluye expresiones como `(MOSTRAR TARJETA)`, `(LEER OPCIONES)` y otras instrucciones al encuestador. No elimines el prefijo o etiqueta `ENC`, `ENC.`, `ENC:` ni equivalentes cuando sean visibles: deben permanecer literalmente en la etiqueta o texto correspondiente.
 
+Conserva el énfasis relevante dentro de etiquetas, INTRO y categorías usando marcadores canónicos:
+- negrita: `**texto**`;
+- subrayado: `<u>texto</u>`;
+- negrita y subrayado: `**<u>texto</u>**` respetando el alcance visual original.
+
+No uses marcadores de formato para texto que no esté formateado en el Word.
+
+Retira de la etiqueta únicamente, siempre que no sea texto mostrado al encuestador:
+- el identificador inicial;
+- marcadores RU/RM/RN/FR;
+- instrucciones PROG;
+- marcas de rotación, exclusividad y fijación trasladadas a campos propios;
+- códigos y tablas de opciones.
+
+Las instrucciones ENC visibles siempre se consideran parte del texto que verá el encuestador y se conservan, incluida la marca `ENC`.
+
+# 8. ESQUEMA CANÓNICO DE CAMPOS
+
+Dentro de una variable o subcampo usa solo estos campos y en este orden cuando apliquen:
 1. `Etiqueta`
 2. `Tipo`
 3. `Cardinalidad`
@@ -118,11 +167,15 @@ Usa únicamente los siguientes campos dentro de una variable o subcampo, en este
 8. `Rango captura asociada`
 9. `Validación literal`
 10. `Lista común`
-11. `Indicaciones` o `IndicacionesN`
-12. `Sub-campos`
-13. `Categorías`
+11. `Función técnica`
+12. `Regla de cuota`
+13. `Estructura grid`
+14. `Sub-campos`
+15. `Indicaciones` o `IndicacionesN`
+16. `Elementos de iteración`
+17. `Categorías`
 
-Valores permitidos para `Tipo`:
+Valores permitidos de `Tipo`:
 - `Categorico Respuesta Unica`
 - `Categorico Respuesta Multiple`
 - `Numerica`
@@ -133,421 +186,266 @@ Valores permitidos para `Tipo`:
 - `GRID con varias variables`
 - `Otro`
 
-Valores permitidos para `Rotación`:
+Valores permitidos de `Rotación`:
 - `ROTAR`
 - `RANDOMIZAR`
 - `ALFABÉTICO A-Z`
 - `ALFABÉTICO Z-A`
 - `INVERTIDO`
 
-Valores permitidos para `Captura asociada`:
-- `Sí`
+Valores permitidos de `Función técnica`:
+- `Cuota`
 
-Valores permitidos en las columnas especiales de categorías:
-- `Sí`
-- celda vacía
+Valores permitidos de `Estructura grid`:
+- `HOMOGENEA`
+- `HETEROGENEA`
 
-No uses otros sinónimos en estos campos técnicos.
+No agregues otros valores técnicos sin evidencia expresa del cuestionario o sin estar definidos en este prompt.
 
-# 10. DETERMINACIÓN DEL TIPO
-Aplica esta precedencia:
+# 9. DETERMINACIÓN DEL TIPO
 
-## 10.1 GRID con varias variables
-Usa `GRID con varias variables` cuando un padre contenga dos o más campos de captura independientes, incluidas fechas divididas, matrices con varias columnas y baterías con subpreguntas.
+Precedencia:
+1. Padre con subcampos de captura → `GRID con varias variables`.
+2. RM o selección múltiple → `Categorico Respuesta Multiple`.
+3. RU o selección única → `Categorico Respuesta Unica`.
+4. Fecha completa → `Fecha`.
+5. Decimal explícito → `Decimal`.
+6. Entero/edad/cantidad/año → `Numerica`.
+7. Abierta textual → `Texto`.
+8. Elemento técnico informativo explícito → `Informacion`.
+9. Evidencia insuficiente → `Otro`.
 
-## 10.2 Categorico Respuesta Multiple
-Úsalo cuando aparezca RM, se permita elegir varias opciones o exista una cardinalidad máxima mayor que uno.
+No clasifiques una lista con códigos numéricos como `Numerica` si la captura es categórica.
 
-## 10.3 Categorico Respuesta Unica
-Úsalo cuando aparezca RU, exista una lista de selección única o el contexto documente una única respuesta.
+# 10. CARDINALIDAD
 
-## 10.4 Fecha
-Úsalo cuando una variable capture una fecha completa sin subcampos.
+Para variables categóricas conserva la cardinalidad cuando sea explícita o directamente determinable:
+- RU obligatoria → `1..1`.
+- RU opcional explícita → `0..1`.
+- RM sin límites explícitos → `1..`.
+- RM opcional explícita → `0..`.
+- máximo 3 → `1..3`, salvo mínimo distinto documentado.
+- al menos 2 → `2..`.
+- entre 2 y 5 → `2..5`.
 
-## 10.5 Decimal
-Úsalo para montos o mediciones que admitan decimales explícitamente.
+No inventes mínimos o máximos.
 
-## 10.6 Numerica
-Úsalo para enteros abiertos, edades, cantidades, conteos, años y mediciones enteras. Una lista con códigos numéricos sigue siendo categórica.
+# 11. RANGOS Y VALIDACIÓN LITERAL
 
-## 10.7 Texto
-Úsalo para respuestas abiertas textuales, nombres, teléfonos, documentos, correos, comentarios y especificaciones abiertas.
+`Rango` solo cuando exista límite explícito aplicable a captura numérica, decimal o textual.
+Formatos autorizados: `MIN..MAX`, `MIN..`, `..MAX`.
 
-## 10.8 Informacion
-Úsalo solo si el cuestionario declara explícitamente un elemento informativo como elemento técnico que deba preservarse en Metadata. No conviertas introducciones comunes en variables de información.
+`Validación literal` solo cuando el cuestionario incluya una expresión regular o regla exacta de formato que deba conservarse textualmente. No inventes regex.
 
-## 10.9 Otro
-Úsalo únicamente cuando la evidencia no permita asignar otro tipo.
+# 12. CATEGORÍAS Y ATRIBUTOS
 
-# 11. CARDINALIDAD
-Incluye `Cardinalidad` en toda variable o subcampo categórico cuando sea explícita o pueda determinarse directamente por RU/RM y límites documentados.
+Cuando existan opciones usa exactamente:
 
-Escribe exclusivamente una de estas formas:
-- `1..1`
-- `1..`
-- `0..1`
-- `0..`
-- `MIN..MAX`
-- `MIN..`
+| Código | Etiqueta | Exclusiva | Fija | Especificar | Tipo captura | Rango captura |
+|---|---|---|---|---|---|---|
 
 Reglas:
-- RU implica `1..1`, salvo que el documento indique explícitamente que puede quedar sin respuesta, en cuyo caso usa `0..1`.
-- RM sin límites explícitos implica `1..`.
-- “Seleccione máximo 3” implica `1..3`.
-- “Seleccione al menos 2” implica `2..`.
-- “Seleccione entre 2 y 5” implica `2..5`.
-- Usa mínimo cero solo si se indica explícitamente que puede omitirse la respuesta.
-- No inventes máximos ni mínimos.
-- Conserva la cardinalidad en el padre o subcampo exacto al que aplica.
+- una opción por fila;
+- conserva el orden documental;
+- conserva códigos literales, incluidos ceros iniciales;
+- si no hay código, deja la celda vacía;
+- `Exclusiva = Sí` solo ante evidencia explícita;
+- `Fija = Sí` solo ante FIJAR/FIJA/NO ROTAR/exclusión explícita de rotación;
+- `Especificar = Sí` solo cuando exista captura asociada inequívoca;
+- “Otro/Otra/Otros” por sí solo no autoriza `Especificar`;
+- no crees una fila si la etiqueta está vacía y no existe evidencia inequívoca de que una categoría vacía fue definida intencionalmente en el cuestionario;
+- una línea, celda o código aislado sin etiqueta no autoriza una categoría como `_ 7 "" [value = 7]`; registra internamente la anomalía para QA;
+- tipos de captura: `Texto`, `Numerica`, `Decimal`, `Fecha`, `Otro`;
+- no generes filas o tablas vacías;
+- escapa `|` dentro de celdas como `\|`.
 
-# 12. RANGOS Y VALIDACIONES LITERALES
-## 12.1 Rango
-Incluye `Rango` solo ante un mínimo y máximo inequívocos o un límite literal aplicable a una variable numérica, decimal o textual.
+# 13. ROTACIÓN Y ORDEN
 
-Formatos:
-- `MIN..MAX`
-- `MIN..`
-- `..MAX`
-
-Ejemplos documentales:
-- “RANGO DE 0 A 60” → `Rango: 0..60`
-- “PERMITIR AÑOS DE 1946 A 2007” → `Rango: 1946..2007`
-- “MÁXIMO 200 CARACTERES” → `Rango: 0..200`
-
-No deduzcas rangos desde categorías, ejemplos o conocimiento externo.
-
-## 12.2 Validación literal
-Incluye `Validación literal` únicamente cuando el cuestionario proporcione una expresión regular literal o una regla exacta de formato que deba preservarse textualmente.
-
-No inventes regex. Conserva literalmente la expresión o regla después de limpiar solo el prefijo técnico redundante.
-
-# 13. ROTACIÓN, ALEATORIZACIÓN Y ORDEN
-No elimines estas instrucciones. Regístralas en el campo `Rotación` de la variable, subcampo o conjunto exacto al que apliquen.
-
-Mapeo:
-- ROTAR o ROTANDO → `ROTAR`
-- RANDOMIZAR, ALEATORIZAR o ALEATORIAMENTE → `RANDOMIZAR`
+Mapea exclusivamente instrucciones explícitas:
+- ROTAR/ROTANDO → `ROTAR`
+- RANDOMIZAR/ALEATORIZAR → `RANDOMIZAR`
 - ALFABÉTICO A-Z → `ALFABÉTICO A-Z`
 - ALFABÉTICO Z-A → `ALFABÉTICO Z-A`
 - INVERTIDO → `INVERTIDO`
 
-Si la instrucción aplica solo a algunas alternativas, registra además `Fija = Sí` en las alternativas expresamente excluidas del universo de rotación.
+Si algunas opciones quedan fuera de la rotación, marca `Fija = Sí` solo en esas opciones.
 
-No conviertas rotación en una indicación genérica ni la incorpores a la etiqueta.
+# 14. CAPTURAS ASOCIADAS
 
-# 14. CATEGORÍAS Y ATRIBUTOS ESPECIALES
-Cuando existan opciones, usa una tabla Markdown con estas columnas exactas:
+Si la captura pertenece a una categoría, usa las columnas `Especificar`, `Tipo captura` y `Rango captura`.
 
-`| Código | Etiqueta | Exclusiva | Fija | Especificar | Tipo captura | Rango captura |`
-
-Cabecera:
-`|---|---|---|---|---|---|---|`
-
-Reglas:
-- Cada opción ocupa una fila.
-- Conserva el orden documental original. El conversor MDD realizará el reordenamiento técnico.
-- Conserva códigos literalmente, incluidos ceros iniciales.
-- Si no hay código, deja la celda vacía. No lo inventes.
-- Conserva la etiqueta visible después de retirar únicamente las marcas técnicas trasladadas a columnas propias.
-- Escapa `|` dentro de una celda como `\|`.
-- No generes tablas vacías ni HTML.
-- No deduzcas exclusividad por código o wording. Marca solo la exclusividad explícita del cuestionario; el conversor aplicará además sus reglas semánticas y técnicas.
-- No deduzcas fijación por código. Marca solo `FIJAR`, `FIJA`, “NO ROTAR”, exclusión explícita de rotación o equivalente inequívoco.
-
-## 14.1 Exclusiva
-Si la opción está marcada como EXCLUSIVA o equivalente inequívoco, escribe `Sí` en `Exclusiva`.
-
-## 14.2 Fija
-Si está marcada como FIJAR, FIJA, NO ROTAR o está expresamente fuera de la rotación, escribe `Sí` en `Fija`.
-
-## 14.3 Especificar y captura asociada
-Escribe `Sí` en `Especificar` únicamente cuando exista una solicitud inequívoca de especificación o un campo abierto asociado a esa categoría.
-
-La palabra “Otro”, “Otra” u “Otros” por sí sola no basta.
-
-En `Tipo captura`, usa uno de:
-- `Texto`
-- `Numerica`
-- `Decimal`
-- `Fecha`
-- `Otro`
-
-En `Rango captura`, usa el rango explícito con formato `MIN..MAX`, `MIN..` o `..MAX`. Déjalo vacío si no existe.
-
-Ejemplo estructural:
-`| 94 | Otro, especifique |  | Sí | Sí | Texto | 0..200 |`
-
-# 15. CAPTURAS ASOCIADAS SIN CATEGORÍA
-Si una variable tiene una captura secundaria inequívocamente asociada que no pertenece a una categoría, usa:
+Si existe una captura secundaria inequívocamente asociada a la variable pero no a una categoría:
 - `Captura asociada: Sí`
 - `Tipo captura asociada: TIPO`
 - `Rango captura asociada: RANGO`, si existe.
 
-No generes una variable independiente para esa captura salvo que el cuestionario le asigne identificador y condición de variable propia.
+No la conviertas en variable independiente salvo identificador propio y función de captura propia.
 
-# 16. INDICACIONES OPERATIVAS
-Conserva en `Indicaciones` únicamente información que el Markdown deba documentar para trazabilidad y que no tenga un campo específico anterior:
-- continuación;
-- terminación;
-- detención de grabación;
+# 15. INDICACIONES FUNCIONALES
+
+Conserva en `Indicaciones` únicamente reglas funcionales que no tengan campo específico, entre ellas:
+- continuar;
+- terminar;
+- filtros y saltos;
+- show/hide;
+- piping;
+- precarga;
 - selección requerida;
 - exclusión entre preguntas;
-- piping o presentación de respuestas previas;
-- BACKCHECK.
+- cálculo;
+- backcheck;
+- iniciar grabación;
+- detener grabación;
+- alcance de un segmento de grabación;
+- reglas conjuntas entre varias preguntas.
 
-No repitas aquí tipo, cardinalidad, rango, validación, rotación, exclusividad, fijación o captura asociada.
+Elimina únicamente el prefijo `PROG:` cuando corresponda.
 
-Elimina solo el prefijo `PROG:` y reformula únicamente cuando exista un mapeo inequívoco:
-- `CONTINUAR` asociado al código 1 → `Continuar si marca codigo 1`.
-- `AGRADEZCA Y TERMINE` asociado al código 2 → `Terminar si marca codigo 2`.
-- `DETENER LA GRABACIÓN Y CONTINÚE` asociado al código 2 → `Detener la grabacion si marca codigo 2 y continuar`.
-- `TERMINAR F8=COD 3` → `TERMINAR SI SELECCIONA COD 3`.
-- `TERMINAR SI NO SELECCIONA F5=COD 2` → `TERMINAR SI NO SELECCIONA COD 2`.
-- `SI ES MENOR DE 18 AÑOS AGRADEZCA Y TERMINE` → `TERMINAR SI ES MENOR DE 18 AÑOS`.
+Puedes reformular una instrucción a una regla condicional breve solo cuando la equivalencia sea inequívoca. Conserva códigos visibles del cuestionario dentro de la indicación.
 
-Para otras instrucciones conserva el contenido y significado, sin agregar condiciones.
+Una regla usa `Indicaciones`.
+Dos o más reglas usan `Indicaciones1`, `Indicaciones2`, ... sin saltos y en orden documental.
 
-Una regla usa `Indicaciones`; varias usan `Indicaciones1`, `Indicaciones2`, etc., en orden documental, sin duplicados.
+No dupliques una misma regla en varias variables.
 
-# 17. ASIGNACIÓN DE INSTRUCCIONES
-1. Si menciona una variable destino, asígnala a esa variable.
-2. Si condiciona la respuesta anterior, asígnala a la anterior.
-3. Si afecta varias variables, asígnala a la última variable del bloque, salvo que el documento individualice destinos.
-4. Si no existe destino claro, asígnala a la variable inmediatamente anterior.
-5. No dupliques instrucciones conjuntas.
-6. Cardinalidad, rango, validación, rotación y atributos de categoría se asignan siempre al elemento exacto al que visual o textualmente correspondan.
+# 16. ASIGNACIÓN DE INSTRUCCIONES
 
-# 18. LISTAS COMUNES Y TABLAS COMPARTIDAS
-Si el cuestionario nombra explícitamente una lista común, incluye:
-`- **Lista común:** NOMBRE_LITERAL`
+Precedencia:
+1. Si la instrucción nombra destino, asígnala al destino.
+2. Si condiciona la respuesta anterior, asígnala a la variable anterior.
+3. Si es conjunta y debe evaluarse cuando varias respuestas existan, asígnala a la última variable necesaria para evaluar la condición.
+4. Si aplica a un bloque, conserva la regla en el punto operativo correcto y no la replique.
+5. Si el destino sigue siendo ambiguo, no inventes; conserva la instrucción en la variable inmediatamente anterior y marca internamente la ambigüedad para QA.
 
-Si el mismo conjunto de categorías se reutiliza sin nombre, no inventes un nombre. Replica las categorías en cada variable para que el conversor pueda detectar igualdad.
+# 17. BACKCHECK Y GRABACIÓN
 
-Cuando una tabla contenga categorías para dos o más variables independientes, crea una variable por cada columna de captura, con etiqueta, tipo, cardinalidad, atributos y tabla propios. Conserva el orden de las columnas.
-
-No combines variables independientes en un padre salvo que el cuestionario documente una estructura padre/subcampo.
-
-# 19. GRIDS Y SUBCAMPOS
-Usa:
-
-`#### IDENTIFICADOR_PADRE`
-`- **Etiqueta:** Texto`
-`- **Tipo:** GRID con varias variables`
-`- **Sub-campos:** N`
-
-Después presenta cada subcampo:
-
-`##### IDENTIFICADOR_SUBCAMPO`
-`- **Etiqueta:** Texto`
-`- **Tipo:** TIPO`
-`- **Cardinalidad:** CARDINALIDAD`
+Detecta, entre otras, las expresiones:
+BACKCHECK, BACK CHECK, BACK-CHECK, BC, PUNTO DE BACKCHECK, GRABAR, INICIAR GRABACIÓN, DETENER GRABACIÓN, AUDIO, RECORDING, CONTROL DE CALIDAD.
 
 Reglas:
-- Padre primero y subcampos inmediatamente después.
-- `Sub-campos` es la cantidad exacta.
-- Cada subcampo tiene tipo, cardinalidad, rango, atributos y categorías propios cuando correspondan.
-- Conserva el orden visible.
-- No inventes subcampos ni uses encabezados decorativos.
-- Si las filas o índices de una matriz tienen códigos explícitos, consérvalos en la categoría o estructura correspondiente.
-- Si las filas no tienen códigos, deja el código vacío. No asignes numeración en extracción.
-- En fechas divididas, clasifica cada subcampo según su captura real.
+- un backcheck explícito debe preservarse;
+- un inicio se asigna a la variable donde inicia;
+- una detención se asigna a la variable donde termina;
+- no inventes límites de segmentos;
+- si un bloque tiene inicio y fin explícitos, conserva ambos;
+- si solo dice BACKCHECK sin límites, conserva solo `Punto de backcheck`.
 
-Para matrices homogéneas, representa las filas como `Categorías` del padre cuando sean los elementos iterados, y las opciones de respuesta como `Categorías` del subcampo común. Si el documento presenta subpreguntas con identificadores propios, conserva cada una como subcampo.
+# 18. LISTAS COMUNES, TABLAS Y GRIDS
 
-# 20. DATOS DEL ENTREVISTADO
-Incluye cada campo con etiqueta explícita y espacio de captura como variable independiente.
+Si el cuestionario nombra una lista común, usa `Lista común: NOMBRE_LITERAL`.
 
-- No conviertas el título “DATOS DEL ENTREVISTADO” en variable.
-- No agrupes los campos sin respaldo documental.
-- No incluyas líneas de llenado.
-- Usa `Texto` para nombre, documento, teléfono y correo, salvo indicación explícita distinta.
-- Conserva rangos o validaciones literales si existen.
+Si el mismo conjunto de códigos/categorías o la misma escala aparece dos o más veces, identifícalo como candidato obligatorio a lista reutilizable para la etapa 2. Conserva exactamente códigos, etiquetas, atributos y orden de origen en cada aparición; la etapa 2 creará y nombrará la lista técnica. No alteres una escala repetitiva por diferencias puramente de presentación.
 
-# 21. ORDEN DOCUMENTAL
-- Sigue el orden del cuestionario.
-- No ordenes códigos ni variables en esta etapa.
-- No agrupes por tipo o sección.
-- No crees índice.
-- No agregues numeración propia.
-- Presenta subcampos inmediatamente después del padre.
-- En tablas compartidas, sigue el orden de columnas.
-- La normalización y el reordenamiento para MDD corresponden al segundo prompt.
+## 18.1 Detección obligatoria de grid
 
-# 22. PLANTILLAS CANÓNICAS
-## 22.1 Variable categórica
-`#### IDENTIFICADOR`
-`- **Etiqueta:** ETIQUETA`
-`- **Tipo:** Categorico Respuesta Unica`
-`- **Cardinalidad:** 1..1`
-`- **Rotación:** ROTAR`
-`##### Categorías:`
-`| Código | Etiqueta | Exclusiva | Fija | Especificar | Tipo captura | Rango captura |`
-`|---|---|---|---|---|---|---|`
-`| 1 | Opción |  |  |  |  |  |`
-`| 94 | Otro, especifique |  | Sí | Sí | Texto | 0..200 |`
-`| 99 | Ninguno | Sí | Sí |  |  |  |`
+Interpreta como grid/matriz una estructura que combine un enunciado común con dos o más elementos/atributos y una escala o mecanismo de respuesta compartido. Son señales acumulativas:
+- tabla con atributos numerados en filas y escala en columnas;
+- encabezado común seguido de ítems con el mismo tipo/cardinalidad;
+- una tabla de atributos y otra tabla de escala;
+- instrucciones únicas de RU/RM/rotación aplicables a todos los ítems;
+- celdas combinadas, bordes o alineación que muestren pertenencia a una misma batería.
 
-## 22.2 Variable numérica
-`#### IDENTIFICADOR`
-`- **Etiqueta:** ETIQUETA`
-`- **Tipo:** Numerica`
-`- **Rango:** 18..99`
+Los atributos numerados de una batería NO son preguntas principales independientes. Deben representarse como elementos de iteración dentro de un padre grid, salvo evidencia explícita de que cada atributo tiene flujo, tipo o lógica propia fuera de la grilla.
 
-## 22.3 Grid
-`#### PADRE`
-`- **Etiqueta:** ETIQUETA`
-`- **Tipo:** GRID con varias variables`
-`- **Sub-campos:** 2`
-`##### SUBCAMPO_1`
-`- **Etiqueta:** ETIQUETA`
-`- **Tipo:** TIPO`
-`##### SUBCAMPO_2`
-`- **Etiqueta:** ETIQUETA`
-`- **Tipo:** TIPO`
+Para padres y subcampos:
 
-Los ejemplos son solo estructurales. No copies datos ausentes.
+#### PADRE
+- **Etiqueta:** ...
+- **Tipo:** GRID con varias variables
+- **Estructura grid:** HOMOGENEA | HETEROGENEA
+- **Sub-campos:** N
 
-# 23. REGLAS DE MARKDOWN
-- Usa Markdown estándar, nunca HTML.
-- Variables principales: `####`.
-- Subcampos: `#####`.
+##### SUBCAMPO
+- **Etiqueta:** ...
+- **Tipo:** ...
+
+Conserva el orden visible y la cantidad exacta de subcampos.
+
+Para grid homogénea, usa un solo subcampo capturable común y agrega al padre:
+
+##### Elementos de iteración:
+
+| Código | Etiqueta |
+|---|---|
+
+Incluye una fila por atributo/ítem numerado. La tabla `Categorías` del subcampo contiene la escala común. `Sub-campos` cuenta campos capturables, no atributos iterados.
+
+Para grid heterogénea, usa un subcampo por captura de tipo/cardinalidad/escala distinta. No conviertas esos subcampos en preguntas principales.
+
+Para matrices homogéneas, conserva inequívocamente tanto la escala capturable como las filas/índices iterados. No descartes una segunda tabla por parecer estructural. Si la relación es ambigua, conserva todos los textos y marca internamente la estructura para revisión; no aplanes la grilla.
+
+# 19. CUOTAS
+
+Cuando el cuestionario identifique explícitamente CUOTA, CONTROL DE CUOTA o ASIGNACIÓN SEGÚN CUOTA:
+- conserva la variable;
+- clasifica su tipo según la captura;
+- añade `- **Función técnica:** Cuota`.
+- conserva todas sus categorías, códigos y etiquetas, incluso si están en una imagen o tabla flotante;
+- conserva literalmente en `Regla de cuota` la derivación, asignación, condiciones, fuentes y prioridades que aparezcan;
+- si la cuota deriva de edad, región, sexo u otra variable, registra esas variables en la regla sin inventar mappings;
+- no confundas una instrucción de control de cuota con una pregunta al entrevistado;
+- no combines cuotas distintas ni omitas una cuota secundaria por compartir categorías.
+
+No infieras cuota por ubicación o categorías.
+
+# 20. ORDEN Y MARKDOWN
+
+- Sigue estrictamente el orden documental.
+- Variable principal: `#### IDENTIFICADOR`.
+- Subcampo: `##### IDENTIFICADOR`.
 - Categorías: `##### Categorías:`.
-- Usa exactamente la tabla de siete columnas definida en la sección 14.
-- No uses bloques de código en el archivo resultante.
-- No escapes guiones bajos ni puntos.
-- Escapa `|` solo dentro de celdas.
-- Separa variables con una única línea vacía.
-- Omite campos inexistentes; no uses `N/A`, valores de relleno ni tablas vacías.
-- No agregues campos distintos de los autorizados.
+- Markdown estándar. Se permite exclusivamente `<u>...</u>` dentro de etiquetas para representar subrayado, porque Markdown no dispone de una sintaxis nativa equivalente.
+- No uses bloques de código envolventes.
+- No escapes guiones bajos ni puntos de identificadores.
+- Separa variables con una línea vacía.
+- Omite campos inexistentes; nunca uses `N/A`.
 
-# 24. RESOLUCIÓN DETERMINISTA
-1. Recorre de arriba hacia abajo y de izquierda a derecha.
-2. Conserva el orden documental.
-3. Aplica la precedencia de tipos de la sección 10.
-4. Conserva literalmente identificadores, códigos y wording.
-5. Ante tipo ambiguo, usa `Otro`.
-6. Ante código ausente, deja la celda vacía.
-7. Ante cardinalidad no documentada fuera de RU/RM, omítela.
-8. Ante captura asociada ambigua, no marques `Especificar`.
-9. Ante exclusividad o fijación ambiguas, deja la celda vacía.
-10. Ante rotación ambigua, omite `Rotación`.
-11. Si código y etiqueta se repiten exactamente por artefacto de formato, conserva una fila.
-12. Si comparten código pero difieren en etiqueta, conserva ambas.
-13. Si comparten etiqueta pero difieren en código, conserva ambas.
-14. No tomes decisiones aleatorias.
+# 21. QA DE SALIDA — GATE E1→E2
 
-# 25. PROHIBICIONES
-Está prohibido:
-- inventar variables, códigos, opciones, etiquetas, instrucciones, cardinalidades, rangos o validaciones;
-- usar MDD u otra fuente como datos;
-- modificar identificadores;
-- reemplazar puntos por guiones bajos;
-- renumerar categorías;
-- ordenar códigos numéricamente en esta etapa;
-- eliminar marcas documentales de exclusividad, fijación, rotación o especificación sin trasladarlas a sus campos;
-- inferir `other(...)`; esta etapa solo registra la evidencia de especificación;
-- incluir RU/RM como indicación;
-- introducir HTML;
-- agregar Estado, Origen, Observaciones o comentarios;
-- mostrar razonamiento interno;
-- agregar texto fuera del Markdown final.
+Antes de entregar, realiza internamente al menos estas validaciones:
 
-# 26. VALIDACIÓN FINAL OBLIGATORIA
-Antes de entregar, corrige internamente cualquier incumplimiento.
+## 21.1 Cobertura
+- 100 % del cuestionario recorrido.
+- Todas las variables/capturas identificadas están representadas.
+- Todas las tablas, matrices, grids, campos abiertos y datos del entrevistado fueron revisados.
+- Todas las páginas y objetos visuales fueron contrastados con la extracción textual.
+- Todas las variables presentes solo en imágenes, tablas dibujadas, cuadros o formas fueron incorporadas.
+- Todos los INTRO y todas las cuotas explícitas fueron representados.
+- Todos los backchecks e inicios/detenciones explícitos fueron conservados.
 
-## 26.1 Cobertura
-- Se revisó el 100 % del cuestionario y su disposición visual.
-- Se incluyeron todas las variables y capturas asociadas.
-- Se revisaron tablas, matrices, grids, casillas y datos del entrevistado.
+## 21.2 Integridad estructural
+- Cada variable tiene encabezado válido.
+- Los padres preceden a sus subcampos.
+- `Sub-campos` coincide con el número real.
+- Las tablas `Categorías` tienen exactamente siete columnas y las tablas `Elementos de iteración` exactamente dos.
+- Se conservó el orden documental en esta etapa; el orden técnico por código se aplicará en etapa 2.
+- No hay campos no autorizados.
+- Ninguna categoría tiene etiqueta vacía salvo definición explícita e inequívoca del cuestionario.
+- Ningún atributo numerado de una grid fue convertido indebidamente en pregunta principal.
 
-## 26.2 Compatibilidad con el conversor MDD
-- Toda categórica tiene tipo y cardinalidad cuando RU/RM o límites lo permiten.
-- Las marcas explícitas de exclusividad y fijación están en columnas propias.
-- Las solicitudes inequívocas de especificación están marcadas.
-- El tipo y rango de cada captura asociada se conservaron cuando existen.
-- La rotación o el orden explícitos están en `Rotación`.
-- Los rangos y validaciones literales están en sus campos.
-- No se eliminó información necesaria para producir `value`, `other(...)`, `fix`, `exclusive`, `fix exclusive`, loops o blocks.
+## 21.3 Compatibilidad con etapa 2
+- Todo `Tipo` pertenece a la lista autorizada.
+- Toda categórica tiene cardinalidad cuando RU/RM o límites la determinan.
+- `Exclusiva`, `Fija`, `Especificar`, captura asociada, rango, validación y rotación están en campos propios.
+- Las instrucciones funcionales no se perdieron dentro de las etiquetas.
+- Los intros técnicos usan `Tipo: Informacion`.
+- Las cuotas usan `Función técnica: Cuota`.
+- Las opciones Otro solo usan `Especificar = Sí` cuando existe solicitud literal de especificación.
+- Las negritas, subrayados, textos entre paréntesis e indicaciones ENC visibles se conservaron.
 
-## 26.3 Integridad
-- Los identificadores y códigos proceden del cuestionario.
-- Las etiquetas no contienen marcas técnicas trasladadas.
-- No se inventaron códigos o límites.
-- No se reordenaron las categorías.
-- Las tablas tienen siete columnas y no están vacías.
-- Padres y subcampos están correctamente relacionados.
+## 21.4 Consistencia
+- Ningún dato fue inventado.
+- Ninguna instrucción fue duplicada.
+- Ninguna categoría fue omitida por considerarse técnica.
+- Ninguna variable sin ID usa la etiqueta completa normalizada como identificador.
+- Todo ID generado es válido, único y reproducible.
+- No existen contradicciones internas generadas por la extracción.
 
-## 26.4 Markdown
-- La primera línea es `#### IDENTIFICADOR`.
-- No hay texto antes ni después de las variables.
-- No hay HTML ni bloques de código envolventes.
-- Solo aparecen campos autorizados.
+Si una validación falla y puede corregirse desde la fuente, corrige y repite QA. Si no puede resolverse por ilegibilidad o ambigüedad material, no afirmes que la salida está completa.
 
-## 26.5 LOOP DE IA DE CONTROL DE CALIDAD
+# 22. SALIDA FINAL
 
-Antes de considerar finalizada la extracción, ejecutar internamente el siguiente ciclo determinista de revisión:
+Genera exactamente un archivo:
+`[BASE_ESTUDIO].cuestionario.md`
 
-### Revisión 1: Cobertura documental
-- Verificar que el 100 % del material fuente haya sido recorrido.
-- Confirmar que no existan variables, categorías, subcampos, instrucciones, tablas o capturas asociadas omitidas.
-- Confirmar que todo elemento incluido proviene del documento fuente.
-
-### Revisión 2: Concordancia estructural
-- Verificar concordancia entre:
-  - identificadores;
-  - etiquetas;
-  - tipos;
-  - cardinalidades;
-  - categorías;
-  - códigos;
-  - capturas asociadas;
-  - grids;
-  - loops;
-  - bloques;
-  - relaciones padre-hijo.
-- Confirmar que no existan contradicciones entre secciones del resultado.
-
-### Revisión 3: Consistencia técnica final
-- Verificar cumplimiento de todas las reglas del presente prompt.
-- Corregir automáticamente cualquier incumplimiento detectado.
-- Repetir la revisión hasta que no existan inconsistencias.
-
-### Revisiones visuales obligatorias
-
-Realizar además dos inspecciones visuales independientes del material fuente:
-
-#### Inspección visual 1
-- Revisar tablas.
-- Revisar matrices.
-- Revisar grids.
-- Revisar columnas.
-- Revisar encabezados y pies.
-- Revisar elementos flotantes.
-- Revisar contenido distribuido en varias páginas.
-
-#### Inspección visual 2
-- Revisar códigos.
-- Revisar casillas de selección.
-- Revisar variables abiertas.
-- Revisar instrucciones operativas.
-- Revisar capturas asociadas.
-- Revisar relaciones visuales entre preguntas y categorías.
-
-No describir estas revisiones en la salida final.
-La salida únicamente podrá generarse después de completar satisfactoriamente las tres revisiones documentales y las dos revisiones visuales.
-
-# 27. VARIABLES CUOTA
-
-Cuando el cuestionario identifique explícitamente una variable como CUOTA, CONTROL DE CUOTA o ASIGNACIÓN SEGÚN CUOTA, consérvala como variable. Clasifica su tipo según la captura documentada y agrega Función técnica: Cuota. No infieras que una variable es de cuota únicamente por su ubicación, sus categorías o su lógica. No crees variables de cuota que no estén visibles en el cuestionario.
-
-# 28. INTROS
-
-Los textos asociados a cuestionario o bloques dentro de cuestionarios van al siguiente tipo de variables 
-
-Intro_1 "Texto respectivo 1"
-
-
-# 29. ENTREGA FINAL
-Genera un único archivo `.md` con el nombre base del cuestionario.
-
-El archivo debe contener únicamente el Markdown consolidado. No escribas explicaciones, resultados de validación, advertencias ni comentarios dentro del entregable.
+El archivo debe contener únicamente el Markdown canónico de variables. No añadas análisis, diagnósticos, resumen de QA ni texto fuera del archivo.
