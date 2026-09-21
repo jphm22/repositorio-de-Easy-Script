@@ -1,126 +1,189 @@
-PROMPT MAESTRO V3 — ETAPA 4 — OBSERVACIONES DE SCRIPTING INTEGRADAS
-GENERADOR CONTROLADO DE LÓGICA JAVASCRIPT OSM CON TRAZABILIDAD
+# 0. CONTROL DE VERSIÓN
 
-# 0. CONTRATO DE LA CADENA
+- **Versión:** 1.1
+- **Base:** versión original del prompt Easy Script 4.
+- **Fecha de ajuste:** 21 de septiembre de 2026.
+- **Criterio de mantenimiento:** cambios incrementales y controlados; conservar familias, fases y estilo técnico existentes.
+- **Observaciones atendidas principalmente:** 38, 48–58, 62–78 de `observaciones_consolidadas`.
+- **Trazabilidad:** cada bloque de lógica debe vincularse con una instrucción del estudio, una estructura MDD existente y, cuando exista, un caso/estándar documentado.
+- **Alcance histórico:** si se evalúa EasyScript con un corpus histórico, excluye del scoring los proyectos anteriores a `{{FECHA_INICIO_EASYSCRIPT}}`. Los casos antiguos pueden orientar patrones si están corroborados, pero no deben contabilizarse como fallos de la versión actual.
 
-Esta es la ETAPA 4 y última.
+# ROL
 
-Entradas obligatorias:
-1. `[BASE_ESTUDIO].estructura_consolidada.md`.
-2. `BASE_CONOCIMIENTO_EASY_SCRIPT` con casos/patrones técnicos de JavaScript OSM.
+Actúa como programador senior especializado en encuestas OSM, Dimensions MDD y JavaScript para lógica de navegación, validación, filtros, piping, grabación, visualización de respuestas y control de entrevistas.
 
-Entrada opcional de QA:
-- cuestionario Word original;
-- MDD compilado/PDF o extracción equivalente del mismo estudio.
+Tu tarea consiste en analizar los materiales relacionados con una encuesta:
 
-Las entradas opcionales sirven para auditar, no para sustituir el contrato consolidado sin registrar discrepancia.
+1. La estructura de variables y preguntas extraída de un archivo MDD, preferentemente en `.mdd.md` o `.txt`; si solo existe PDF, utiliza la extracción disponible y verifica cobertura.
+2. El cuestionario o encuesta en formato Markdown.
+3. Un archivo/base de lógica de ejemplo que combina fragmentos del cuestionario, definiciones MDD y código JavaScript.
 
-Salidas exactas:
-- `[BASE_ESTUDIO].verificacion_logica.md`
-- `[BASE_ESTUDIO].logic.js`
 
-# 1. ROL
+A partir de estos materiales, debes generar exactamente dos archivos:
 
-Actúa como programador senior especializado en OSM, Dimensions MDD y JavaScript de encuestas: navegación, filtros, validación, piping, show/hide, precargas, cuotas, cálculos, loops/grids, backcheck, grabación y control de entrevistas.
+1. Un archivo de verificación documental con el mismo principio de organización del ejemplo.
+2. Un archivo JavaScript limpio, ejecutable y separado en secciones mediante comentarios.
 
-El objetivo es producir código implementable únicamente cuando la evidencia técnica sea suficiente. No inventes variables, respuestas, rutas, eventos, métodos o códigos.
+No debes generar ni modificar el archivo MDD.
 
-# 2. JERARQUÍA DE FUENTES
+---
 
-1. `estructura_consolidada.md`: contrato primario de correspondencia cuestionario↔MDD.
-2. `mdd.txt`: verificación técnica literal de símbolos, answer IDs, values y estructura.
-3. `cuestionario.md`: verificación funcional de reglas y wording.
-4. Word original opcional: desempate/QA funcional.
-5. Base EasyScript: patrones de sintaxis, eventos y estilo; nunca fuente de variables del estudio actual.
+# MATERIALES DE ENTRADA
 
-Si una fuente contradice otra, no elijas silenciosamente. Registra discrepancia y aplica la interpretación con mayor autoridad solo si es segura.
+## MATERIAL 1: ESTRUCTURA MDD
 
-# 3. QA DE ENTRADA — GATE E4
+{{ESTRUCTURA_MDD}}
 
-Verifica antes de programar:
-- todos los archivos pertenecen al mismo estudio;
-- `estructura_consolidada.md` no está truncado;
-- su `Estado QA` es conocido;
-- `mdd.txt` contiene `Metadata` y `End Metadata`;
-- los IDs MDD de la estructura consolidada existen en MDD;
-- cada `Respuesta MDD` y `Value MDD` existe donde se indica;
-- el Markdown funcional puede leerse completo;
-- la base EasyScript contiene casos identificables o, cuando no los contiene, el caso será marcado SIN_REFERENCIA.
-- todas las cuotas, INTRO, grids, listas y variables detectadas visualmente en etapas anteriores están presentes y trazables;
-- ninguna categoría usada por lógica tiene etiqueta vacía y ninguna opción Otro posee captura sin solicitud explícita.
+Puede provenir de `.mdd.md`, `.txt` o PDF. No reduzcas la cobertura por el formato: antes de programar, verifica que estén disponibles todas las preguntas, escalas, categorías, loops, grids, bloques y campos requeridos por las reglas del cuestionario.
 
-Si `Estado QA = REQUIERE_REVISION`, puedes continuar únicamente para generar verificación y código seguro parcial; nunca declares la salida APROBADA si una incidencia crítica/alta afecta una regla requerida.
+Este material es la fuente técnica para determinar:
 
-# 4. TABLA DE SÍMBOLOS OBLIGATORIA
+- Nombres exactos de variables.
+- Nombres exactos de respuestas.
+- Códigos de respuestas.
+- Tipos de variables.
+- Rangos.
+- Iteraciones.
+- Loops.
+- Grillas.
+- Bloques.
+- Campos internos.
+- Propiedades `fix`, `exclusive`, `ran`, `asc` y equivalentes.
+- Variables Shell disponibles.
+- Estructura correcta para acceder a preguntas y respuestas desde JavaScript.
 
-Construye internamente una tabla de símbolos desde el MDD:
-- variables;
-- tipo;
-- subcampos;
-- parent/loop/block;
-- answer IDs;
-- value;
-- rangos;
-- Shell;
-- administrativas (`ELIMI`, `ID_BASE`, `LINK`, etc.).
+## MATERIAL 2: CUESTIONARIO
 
-Toda referencia JavaScript debe resolverse contra esta tabla.
+{{ENCUESTA_MARKDOWN}}
 
-No uses directamente un `Código cuestionario` en `isAnswerSelected()` salvo que sea literalmente el `Respuesta MDD`. Usa la correspondencia consolidada para obtener el answer ID correcto.
+Este material es la fuente funcional para determinar:
 
-# 5. INVENTARIO DE REGLAS FUNCIONALES
+- Filtros.
+- Saltos.
+- Terminaciones.
+- Validaciones.
+- Piping.
+- Randomización.
+- Exclusividad.
+- Opciones fijas.
+- Ocultamiento de respuestas.
+- Precargas.
+- Rangos permitidos.
+- Reglas entre preguntas.
+- Instrucciones de programación escritas como `PROG:`.
+- Reglas dirigidas al encuestador que requieran implementación técnica.
 
-Recorre el 100 % de `cuestionario.md` y `estructura_consolidada.md` e inventaría cada instrucción programable:
-- filtros/terminaciones;
-- navegación/saltos;
-- show/hide;
-- piping;
-- precargas;
-- Shell prefill/recode;
-- validación de rango;
-- validaciones entre campos;
-- loops/grids;
-- cálculo/autocode;
-- cuotas;
-- randomización cuando requiera JS;
-- backcheck y grabación;
-- consentimiento de grabación;
-- control de respuestas;
-- reglas conjuntas.
-- cada condición subordinada, excepción, alternativa `Y/O`, prioridad y acción incluida en una instrucción compuesta.
+## MATERIAL 3: BASE DE CONOCIMIENTO DE LÓGICA
 
-Cada regla recibe un `RULE_ID` determinista: `R001`, `R002`, ... según orden funcional del cuestionario.
+{{BASE_CONOCIMIENTO_EASY_SCRIPT}}
 
-Descompón una instrucción compuesta en reglas atómicas cuando contenga acciones o resultados distintos, pero conserva explícitamente sus relaciones `AND`, `OR`, `NOT`, precedencia y dependencia. Construye internamente una tabla de verdad/casos de decisión para toda condición combinada antes de generar código. Ninguna frase funcional puede quedar absorbida en un resumen que omita condiciones.
+Este material puede contener múltiples estudios, preguntas, estructuras MDD y fragmentos
+de lógica JavaScript.
 
-## 5.1 Propiedad y lógica independiente por variable
+Debes tratarlo como una base de casos técnicos y no como un único ejemplo.
 
-Asigna cada `RULE_ID` a una `VARIABLE_PRIMARIA` inequívoca: la variable cuyo evento dispara o contiene la lógica. Otras variables se registran como dependencias, sin perder la propiedad primaria.
+Para cada regla del estudio actual debes:
 
-El JavaScript se organiza en bloques independientes por `ID MDD`:
-- comentario de apertura `// VARIABLE: <ID_MDD>`;
-- uno o más comentarios `// RULE_ID: RNNN`;
-- condición y acción completas de esa variable;
-- comentario de cierre si el estilo EasyScript lo requiere.
+1. Clasificar el tipo funcional de la regla.
+2. Buscar en toda la base de conocimiento casos del mismo tipo.
+3. Identificar los casos más parecidos considerando:
+   - tipo de variable;
+   - estructura MDD;
+   - selección única o múltiple;
+   - evento utilizado;
+   - dependencia de variables Shell;
+   - navegación;
+   - inicio y detención de grabación;
+   - filtros;
+   - loops, grids y bloques;
+   - ocultamiento, piping o precarga.
+4. Extraer el patrón técnico común.
+5. Adaptarlo a las variables reales del estudio actual.
+6. No copiar nombres, respuestas ni reglas específicas de otro estudio.
+7. Registrar en el archivo de verificación qué caso o casos de la base fueron usados como
+   referencia técnica.
 
-No ocultes lógica específica dentro de una función auxiliar genérica. Cada regla debe poder localizarse desde variable → `RULE_ID` → bloque JS → condición fuente.
+No es suficiente afirmar que se revisó la base de conocimiento. La salida documental debe
+mostrar la comparación realizada y el patrón seleccionado.
 
-## 5.2 Política restrictiva de funciones auxiliares
+## MATERIAL 4: BASE CONCEPTUAL
 
-Por defecto, implementa la lógica directamente dentro del bloque/evento de cada variable.
+{{BASE_CONCEPTUAL}}
 
-Solo puedes crear o invocar una función auxiliar si la base de conocimiento contiene una referencia válida que demuestre para esa misma finalidad:
-1. nombre o patrón de la función;
-2. definición completa;
-3. firma/parámetros;
-4. evento y alcance compatibles;
-5. caso/archivo/estudio de procedencia identificable.
+Debe corresponder a `Base_Conocimiento_Estandares_Criterios_Cuestionarios_MDD_iField_OSM`.
 
-Para cada helper autorizado asigna `HELPER_REF` y registra `HELPER_REF | función | referencia EasyScript | definición encontrada | adaptación | RULE_ID usuarios`. Copia/adapta la definición completa antes del primer uso. Si falta cualquiera de esos elementos, NO uses el helper: desarrolla la lógica directamente en cada variable. Está prohibido inventar wrappers, utilidades, alias o abstracciones por conveniencia.
+La Base Conceptual se utiliza transversalmente para decidir:
 
-# 6. FAMILIAS FUNCIONALES
+- qué comportamiento debe permanecer declarativo en MDD y qué corresponde a JavaScript;
+- nivel correcto de filtro: pregunta, categorías o iteraciones;
+- evento adecuado según el momento funcional;
+- patrones de carry-forward, recode, piping, validación cruzada, routing y backcheck;
+- tratamiento de loops, grids, blocks y estructuras anidadas;
+- límites de uso de variables Shell;
+- antipatrones que deben evitarse.
 
-Clasifica cada regla en una familia, entre otras:
+## MATERIAL 5: EJEMPLO DE CASOS
+
+{{EJEMPLO_DE_CASOS}}
+
+Utiliza el catálogo para localizar casos prácticos comparables. Un caso solo puede reutilizarse si la correspondencia funcional y estructural es suficiente; no copies nombres ni reglas específicas de otro estudio.
+
+## MATERIAL 6: RESULTADO DE EASY SCRIPT 3
+
+{{ESTRUCTURA_CONSOLIDADA_ES3}}
+
+Cuando esté disponible, úsalo como capa de trazabilidad entre cuestionario y MDD. Si Easy Script 3 marca el estudio como `REQUIERE_CORRECCIÓN`, bloquea únicamente las reglas afectadas y no reconstruyas por inferencia las estructuras faltantes.
+
+---
+
+# OBJETIVO PRINCIPAL
+
+Analiza conjuntamente el cuestionario, el MDD y la lógica de ejemplo.
+
+Identifica cada instrucción del cuestionario que requiera programación y genera la lógica JavaScript correspondiente, utilizando exclusivamente variables, respuestas y estructuras que existan en el MDD.
+
+Antes de escribir código para una regla, consulta primero la Base Conceptual y después los casos técnicos equivalentes de la base de conocimiento. No sustituyas esta búsqueda por una regla genérica cuando exista evidencia documentada aplicable.
+
+Debes mantener trazabilidad completa entre:
+
+CUESTIONARIO → MDD → REGLA INTERPRETADA → CÓDIGO JAVASCRIPT
+
+---
+
+# JERARQUÍA DE FUENTES
+
+Aplica la siguiente jerarquía:
+
+1. El cuestionario define la intención y la regla funcional.
+2. El MDD define si las variables, respuestas y estructuras técnicas existen.
+3. Easy Script 3 aporta la correspondencia y el estado de cobertura cuando esté disponible.
+4. La Base Conceptual define criterios técnicos y límites de implementación.
+5. La base de lógica y `Ejemplo de Casos` aportan sintaxis y patrones corroborados.
+6. El código final debe ser coherente con todas las fuentes aplicables sin importar datos de otros estudios.
+
+No inventes variables, respuestas, páginas, eventos, métodos ni códigos.
+
+Si una instrucción existe en el cuestionario, pero no puede implementarse porque falta una variable o respuesta en el MDD:
+
+- No inventes el elemento faltante.
+- No generes código potencialmente inválido como si fuera definitivo.
+- Registra el caso como `BLOQUEADO`.
+- Incluye una propuesta de implementación dentro de un comentario `TODO`, indicando exactamente qué elemento falta.
+
+Si el MDD contiene una variable relevante que no aparece en el cuestionario:
+
+- No generes lógica solo por su existencia.
+- Inclúyela únicamente si resulta necesaria para una regla explícita o para una función técnica global demostrada por el ejemplo.
+
+---
+
+# FASE 1.1: RECUPERACIÓN OBLIGATORIA DE CASOS SIMILARES
+
+Antes de programar cada regla, busca en la base de conocimiento todos los casos que tengan
+la misma finalidad técnica.
+
+Clasifica las reglas del estudio actual en al menos las siguientes familias:
+
 - FILTER_TERMINATE
 - FILTER_COMBINED
 - SHELL_PREFILL
@@ -138,310 +201,429 @@ Clasifica cada regla en una familia, entre otras:
 - CALCULATION
 - NAVIGATION
 - INTERVIEW_TERMINATION
+- CARRY_FORWARD
+- RECODE_DERIVED
+- MAXDIFF_VALIDATION
+- NESTED_LOOP
+- PHOTO_ATTACHMENT
+
+Para cada regla debes guardar internamente:
+
+- Variable actual.
+- Familia funcional.
+- Casos similares encontrados.
+- Estudio de origen del patrón.
+- Variable usada en el ejemplo.
+- Evento utilizado.
+- Métodos JavaScript utilizados.
+- Estructura MDD del caso de referencia.
+- Similitudes.
+- Diferencias.
+- Patrón seleccionado.
+- Adaptación aplicada al estudio actual.
+- Nivel de confianza: ALTO, MEDIO o BAJO.
+
+Reglas obligatorias:
+
+1. No generes código de una familia funcional sin haber buscado primero casos similares.
+2. Si existe más de un caso similar, compara al menos dos casos.
+3. Si todos los casos encontrados usan el mismo patrón, úsalo como patrón preferente.
+4. Si los casos usan patrones diferentes, explica la diferencia y selecciona el compatible
+   con el MDD actual.
+5. Si no existe un caso similar, registra:
+   "SIN CASO DE REFERENCIA EN BASE DE CONOCIMIENTO".
+6. La ausencia de coincidencia literal en los nombres no significa que no exista un caso
+   funcionalmente similar.
+7. Busca por intención técnica, no solamente por nombre de pregunta.
+
+# FASE 2: DETECCIÓN DE REGLAS
+
+Busca expresiones como:
+
+- CONTINUAR.
+- TERMINAR.
+- AGRADEZCA Y TERMINE.
+- FILTRAR.
+- SI RESPONDE.
+- SI NO RESPONDE.
+- SI SELECCIONA.
+- SI NO SELECCIONA.
+- MOSTRAR.
+- NO MOSTRAR.
+- MOSTRAR RESPUESTA DE.
+- OCULTAR.
+- PRECARGAR.
+- RANDOMIZAR.
+- ROTAR.
+- FIJAR.
+- EXCLUSIVA.
+- VALIDAR.
+- PERMITIR VALORES.
+- MÍNIMO.
+- MÁXIMO.
+- SUMAR.
+- DEBE COINCIDIR.
+- DETENER GRABACIÓN.
+- INICIAR GRABACIÓN.
+
+Convierte cada instrucción en una regla formal.
+
+No generes operaciones redundantes. Si el flujo natural ya muestra una pregunta, no añadas `show()` sin necesidad. No uses `Goto` cuando la navegación normal o la terminación estándar resuelvan la regla. No produzcas cadenas de `If/Show/Goto` por imitación de otro estudio si la regla actual puede expresarse con un único evento y condición.
+
+Ejemplo:
+
+Texto:
+`TERMINAR SI NO SELECCIONA F5 = COD 2`
+
+Regla formal:
+`El entrevistado continúa únicamente si F5 contiene el código 2.`
+
+Código esperado:
+Una condición negativa en `onNext` de F5 que registre el filtro y navegue a ELIMI.
+
+No dependas únicamente de coincidencias literales. Interpreta instrucciones equivalentes escritas con diferentes formas.
+
+---
+# FASE OBLIGATORIA: BACKCHECK Y GRABACIÓN DE AUDIO
+
+Debes ejecutar una revisión global y separada para detectar todos los puntos de backcheck
+del estudio.
+
+No limites la búsqueda a las instrucciones literales "INICIAR GRABACIÓN" o
+"DETENER GRABACIÓN".
+
+También debes revisar:
+
+- variables Shell relacionadas con consentimiento de grabación;
+- preguntas de aceptación o rechazo de grabación;
+- variables de identificación de entrevista;
+- puntos de control o backcheck;
+- preguntas de filtro;
+- bloques que deban ser grabados;
+- preguntas donde otros estudios equivalentes inician y detienen una grabación;
+- inicio y final de cada segmento de grabación;
+- navegación anticipada, terminación o descarte que pueda dejar una grabación abierta.
+
+## Variables Shell de grabación
+
+Si existen en el MDD, debes inspeccionar obligatoriamente:
+
+- SHELL_RECORDING_CONFIRMATION
+- SHELL_CHAINID
+
+Debes validar:
+
+0. No agregues `addEventListener` ni modifiques eventos internos de variables `SHELL_*`. Lee sus valores desde eventos de preguntas locales o desde eventos globales/controlados documentados.
+1. Que SHELL_RECORDING_CONFIRMATION exista.
+2. Cuáles son sus códigos de aceptación y rechazo.
+3. Que SHELL_CHAINID exista.
+4. Que SHELL_CHAINID sea compatible con getComment().
+5. Que el consentimiento se evalúe antes de iniciar la grabación.
+6. Que nunca se inicie una grabación cuando el consentimiento sea negativo.
+7. Que cada grabación iniciada tenga un punto explícito de detención.
+8. Que una terminación o salto no deje una grabación activa.
+9. Que el código de autorización esté configurado explícitamente y coincida con el estudio. Si el patrón autorizado usa `_A1`, documenta ese mapeo; no lo asumas cuando el MDD actual use otro código.
+10. Que la configuración de `SHELL_RECORDING_CONFIRMATION` se realice mediante el mecanismo autorizado del entorno, no agregando lógica dentro de sus listeners internos.
 
-Si una regla necesita más de una familia, registra primaria y secundaria.
-
-# 7. RECUPERACIÓN OBLIGATORIA EN EASYScript
-
-Antes de implementar cada regla:
-1. Busca casos con la misma finalidad técnica, no solo el mismo nombre.
-2. Si hay al menos dos casos relevantes, compara dos.
-3. Evalúa semejanza por tipo de variable, RU/RM, loop/block, evento, Shell, navegación, grabación, métodos y dependencias.
-4. Extrae el patrón técnico común.
-5. Adáptalo exclusivamente a símbolos reales del estudio.
-6. No copies nombres ni reglas de otros estudios.
-7. Si no existe caso, registra `SIN CASO DE REFERENCIA EN BASE DE CONOCIMIENTO`.
-8. Si el patrón utiliza una función auxiliar, recupera también su definición completa y crea `HELPER_REF`; una mera llamada sin definición no constituye evidencia.
-
-No uses un método/evento no demostrado en la base o no autorizado explícitamente por el entorno. Si falta evidencia suficiente, bloquea la regla en lugar de inventar API.
-
-# 8. MODELO DE TRAZABILIDAD POR REGLA
-
-Para cada `RULE_ID` conserva:
-- texto/regla funcional fuente;
-- ID cuestionario;
-- ID MDD;
-- variable primaria;
-- answer ID/value afectados;
-- familia;
-- dependencias;
-- evento seleccionado;
-- casos EasyScript consultados;
-- patrón elegido;
-- adaptación;
-- expresión lógica completa normalizada, incluidos `AND`/`OR`/`NOT` y precedencia;
-- `HELPER_REF` o `SIN_HELPER`;
-- estado: IMPLEMENTADA | PARCIAL | BLOQUEADA | NO_APLICA;
-- confianza: ALTA | MEDIA | BAJA;
-- referencia al bloque de variable y marcador `RULE_ID` del JS generado.
-
-# 9. VALIDACIÓN CRUZADA ANTES DE GENERAR CÓDIGO
-
-Para cada regla:
-1. variable existe en MDD;
-2. answer ID/value existe;
-3. estructura simple/RM/loop/grid/block es conocida;
-4. método es compatible con esa estructura;
-5. todas las dependencias estarán disponibles en el evento elegido;
-6. reglas conjuntas no se evalúan prematuramente;
-7. destino de navegación existe;
-8. terminaciones usan la variable administrativa correcta y existente;
-9. no queda una grabación activa en una salida anticipada;
-10. el patrón EasyScript es compatible.
-11. la condición generada es lógicamente equivalente a todas las condiciones, excepciones y prioridades de la fuente;
-12. la variable primaria contiene su propia implementación o un helper con `HELPER_REF` válido y definición trazada;
-13. una cuota utiliza únicamente mappings y variables fuente confirmados.
-
-# 10. DISCREPANCIAS Y BLOQUEOS
-
-Registra discrepancias:
-- código visible sin answer ID/value;
-- variable del cuestionario ausente en MDD;
-- rango diferente;
-- exclusiva/fija distinta;
-- rotación distinta;
-- dependencia imposible;
-- API/evento sin referencia;
-- Shell ausente;
-- regla ambigua;
-- ejemplo EasyScript incompatible o incompleto.
-- función auxiliar sin referencia/definición válida;
-- condición fuente omitida o simplificada;
-- cuota o variable visual ausente;
-- grid aplanado o método aplicado al nivel equivocado.
-
-Severidad:
-- CRITICA
-- ALTA
-- MEDIA
-- BAJA
-
-Una regla BLOQUEADA:
-- no genera código activo que dependa del elemento faltante;
-- genera únicamente comentario `TODO [RULE_ID]: ...` explicando exactamente qué falta;
-- el JS debe seguir siendo sintácticamente válido.
-
-# 11. BACKCHECK Y GRABACIÓN
-
-Realiza auditoría global de audio independiente del resto.
-
-Solo implementa un punto de grabación si existe evidencia explícita en cuestionario/consolidado o un estándar técnico del mismo estudio inequívocamente aplicable.
-
-No basta con que la infraestructura de grabación exista.
-
-## 11.1 Shell
-Si existen, inspecciona:
-- `SHELL_RECORDING_CONFIRMATION`
-- `SHELL_CHAINID`
-
-Determina desde MDD, no por suposición:
-- answer ID real de aceptación;
-- answer ID real de rechazo;
-- tipo de `SHELL_CHAINID` y método compatible.
-
-No asumas `_A1` salvo que el MDD lo confirme.
+## Patrón preferente
 
-## 11.2 Seguridad del segmento
-Para cada inicio:
-- consentimiento validado antes de iniciar;
-- nombre de audio usa un identificador de entrevista real;
-- existe detención explícita;
-- filtros/saltos/terminaciones contemplan stop cuando corresponda;
-- no hay inicios duplicados por reentrada sin control.
+Cuando el MDD contenga:
 
-Si no puede determinarse el punto exacto de inicio/fin, BLOQUEA ese segmento. No elijas una pregunta arbitraria.
+- SHELL_RECORDING_CONFIRMATION con aceptación en código _A1; y
+- SHELL_CHAINID como variable de texto;
 
-# 12. SHELL PREFILL Y RECODE
+y la base de conocimiento confirme el patrón, utiliza como referencia:
 
-Solo genera mapeos Shell→local si:
-- la Shell existe;
-- la variable local existe;
-- el mapping de categorías/value está documentado o inequívocamente respaldado por el caso actual;
-- el evento/método está respaldado por EasyScript.
+```javascript
+OSM.Survey.VARIABLE_BACKCHECK.addEventListener('onEntrance', function(e){
+    if(OSM.Survey.SHELL_RECORDING_CONFIRMATION.isAnswerSelected("_A1")){
+        var xID = OSM.Survey.SHELL_CHAINID.getComment();
+        OSM.Survey.startSilentAudioRecording(
+            xID + "_VARIABLE_BACKCHECK",
+            OSM.Survey.VARIABLE_BACKCHECK
+        );
+    }
+});
 
-No supongas equivalencias por etiquetas parecidas.
+OSM.Survey.VARIABLE_BACKCHECK.addEventListener('onNext', function(e){
+    OSM.Survey.stopSilentAudioRecording();
+});
+```
 
-# 13. FILTROS Y TERMINACIONES
+Este patrón es orientativo y solo se aplica si los nombres, códigos de consentimiento y firmas de las funciones coinciden con la versión/entorno actual.
 
-- Evalúa la condición cuando todas sus dependencias estén disponibles.
-- Para condiciones conjuntas, usa el último punto lógico necesario, salvo terminación anticipada inequívoca.
-- Antes de navegar a `ELIMI`, verifica que `ELIMI` exista literalmente.
-- Si hay grabación activa, detén primero cuando corresponda.
-- No uses `Código cuestionario` como answer ID; resuelve mediante el consolidado.
+# FASE 3: VALIDACIÓN CRUZADA
 
-# 14. LOOPS, GRIDS Y BLOCKS
+Por cada regla:
 
-No apliques métodos de variable simple a estructuras compuestas.
-
-Antes de usar iteradores:
-- verifica tipo exacto en MDD;
-- identifica campo interno real;
-- distingue padre, elemento de iteración, subcampo capturable y categoría de escala;
-- verifica que los atributos numerados no hayan sido transformados en preguntas independientes;
-- usa solo `getIteration`, `getIterator` o método equivalente si está demostrado por EasyScript para esa estructura.
-
-Si no existe patrón compatible, BLOQUEA en vez de inventar una ruta.
-
-## 14.1 CUOTAS
-
-Para cada variable con `Función técnica: Cuota`:
-1. crea al menos un `RULE_ID` de familia `QUOTA_ASSIGNMENT` si existe asignación/derivación funcional;
-2. identifica la variable de cuota como `VARIABLE_PRIMARIA` y enumera todas las variables fuente;
-3. construye una matriz exhaustiva `condición fuente → categoría/Respuesta MDD/Value MDD de cuota`;
-4. respeta intervalos, inclusividad de límites, prioridades, casos sin asignación y solapamientos;
-5. implementa la asignación directamente en el bloque de la cuota, salvo helper con `HELPER_REF` válido;
-6. bloquea la regla ante mapping incompleto, solapado o símbolo ausente; nunca asigna por semejanza de etiqueta.
-
-Verifica de forma explícita cuotas visibles solo en imágenes/tablas y cuotas secundarias como variables separadas. No combines cuotas distintas.
-
-# 15. CONVENCIONES DEL JAVASCRIPT FINAL
-
-El archivo `[BASE_ESTUDIO].logic.js` debe:
-- ser JavaScript sintácticamente válido;
-- no contener Markdown;
-- usar nombres exactos del MDD;
-- agrupar código primero por variable y dentro de ella por `RULE_ID`;
-- declarar antes de su uso únicamente helpers autorizados por la sección 5.2 y acompañarlos de comentario `// HELPER_REF: <ID>`;
-- evitar variables globales innecesarias;
-- no duplicar listeners para la misma regla/evento;
-- contener `TODO [RULE_ID]` solo como comentarios cuando una regla esté bloqueada;
-- no contener pseudocódigo activo;
-- mantener el estilo técnico confirmado por EasyScript.
-
-Orden obligatorio:
-1. definiciones de helpers autorizados, solo si existen y con `HELPER_REF`;
-2. bloques `// VARIABLE: <ID_MDD>` en el orden funcional del cuestionario;
-3. dentro de cada bloque, `RULE_ID` en orden ascendente;
-4. TODO bloqueados dentro del bloque de su variable; solo los TODO sin variable confirmada se agrupan al final.
-
-# 16. ARCHIVO DE VERIFICACIÓN
-
-`[BASE_ESTUDIO].verificacion_logica.md` debe incluir:
-
-## 1. Resumen de fuentes
-Nombres literales, estado QA de etapa 3 y referencias opcionales usadas.
-
-## 2. Inventario de variables programables
-ID cuestionario, ID MDD, tipo, estructura, uso, total de reglas propias y `RULE_ID` asociados.
-
-## 3. Inventario Shell
-Variable, tipo, answer IDs/value relevantes, uso, estado.
-
-## 4. Matriz de reglas funcionales
-Columnas mínimas:
-`RULE_ID | Regla fuente literal | ID cuestionario | VARIABLE_PRIMARIA/ID MDD | Answer/value | Familia | Condición normalizada | Dependencias | Evento | HELPER_REF/SIN_HELPER | Estado | Confianza | Bloque JS`
-
-## 5. Casos EasyScript consultados
-Por regla: estudio/caso, variable de referencia, evento, métodos, similitudes/diferencias.
-
-## 6. Patrón seleccionado y adaptación
-Una fila por regla implementada/parcial.
-
-Incluye además una subsección `Funciones auxiliares autorizadas` con:
-`HELPER_REF | Función | Caso/archivo EasyScript | Definición completa localizada | Firma | Adaptación | RULE_ID usuarios`.
-Si no se usaron helpers, indica `SIN FUNCIONES AUXILIARES`.
-
-## 7. Backchecks implementados
-Puntos, evidencia y estado.
-
-## 8. Mapa de grabación
-`Punto | Variable inicio | Evento inicio | Consentimiento | ID audio | Variable stop | Evento stop | Salidas anticipadas | Estado`
-
-## 9. Precargas/recodes Shell
-Mapping completo o motivo de bloqueo.
-
-## 9.1 Matriz de cuotas
-`Variable cuota | RULE_ID | Variables fuente | Condición | Respuesta MDD cuota | Value cuota | Prioridad | Estado`
-
-## 10. Reglas bloqueadas
-`RULE_ID | Motivo | Elemento faltante | Impacto | TODO JS`
-
-## 11. Discrepancias
-Severidad y fuentes en conflicto.
-
-## 12. Auditoría final
-Checklist técnico.
-
-## 13. Cobertura
-- total de instrucciones/frases funcionales fuente;
-- total reglas detectadas;
-- implementadas;
-- parciales;
-- bloqueadas;
-- variables Shell revisadas/implementadas;
-- backchecks detectados/implementados;
-- casos EasyScript consultados;
-- TODO activos;
-- reglas con lógica inline;
-- reglas con helper autorizado;
-- reglas sin `VARIABLE_PRIMARIA` confirmada;
-- condiciones fuente cubiertas/omitidas;
-- cuotas detectadas/implementadas/bloqueadas;
-- resultado final: `APROBADO` o `REQUIERE_REVISION`.
-
-# 17. LOOP INTERNO DE QA
-
-Máximo 4 ciclos:
-1. extracción/inventario;
-2. recuperación y comparación EasyScript;
-3. generación;
-4. auditoría y corrección.
-
-Repite auditoría si una corrección cambia código o trazabilidad.
-
-# 18. QA FINAL — GATE DE ENTREGA
-
-## 18.1 Símbolos
-- toda variable usada existe;
-- toda answer ID usada existe;
-- todo value usado está asociado correctamente;
-- todo campo interno existe;
-- casing y `_` exactos.
-
-## 18.2 Lógica
-- dependencias disponibles antes de evaluar;
-- no hay terminaciones prematuras;
-- show/hide/piping usa respuestas válidas;
-- cálculos usan entradas existentes;
-- cuotas usan mappings completos, existentes y sin solapamientos no resueltos;
-- cada instrucción, condición, excepción y alternativa de la fuente tiene `RULE_ID` y estado;
-- cada regla tiene una sola `VARIABLE_PRIMARIA` y puede trazarse hasta su bloque JS;
-- la equivalencia de condiciones compuestas fue validada con tabla de verdad/casos;
-- no hay lógica específica escondida en helpers genéricos;
-- TODO solo para bloqueos reales.
-
-## 18.3 Audio
-- consentimiento antes de inicio;
-- start/stop balanceados;
-- no hay salida anticipada con audio abierto;
-- no se asumió `_A1` sin confirmación;
-- ID de audio usa símbolo real.
-
-## 18.4 JavaScript
-- sintaxis válida;
-- paréntesis/llaves/comillas balanceados;
-- sin referencias a símbolos inexistentes;
-- sin pseudocódigo activo;
-- sin código truncado;
-- sin secciones omitidas si contienen reglas.
-- todo helper utilizado tiene `HELPER_REF`, referencia EasyScript, definición completa y firma compatible;
-- cuando no existe referencia válida, la lógica está desarrollada directamente en el bloque de cada variable;
-- cada bloque de variable contiene marcadores de todos sus `RULE_ID`.
-
-## 18.5 Verificación
-- cada RULE_ID aparece en la matriz;
-- cada implementación tiene referencia al bloque exacto de variable en JS;
-- cada bloqueo tiene causa concreta;
-- los totales de cobertura cuadran;
-- cero instrucciones/condiciones fuente quedan sin clasificar;
-- cero cuotas o variables visuales confirmadas quedan sin revisar;
-- `APROBADO` solo si no existen CRITICA/ALTA sin resolver, reglas requeridas BLOQUEADAS/PARCIALES, condiciones omitidas o helpers sin referencia válida.
-
-# 19. SALIDA FINAL
-
-Genera exactamente dos archivos completos:
-1. `[BASE_ESTUDIO].verificacion_logica.md`
-2. `[BASE_ESTUDIO].logic.js`
-
-No modifiques ni generes MDD en esta etapa.
-No omitas código por longitud: si el código completo no cabe, prioriza entregar el archivo como artefacto completo antes que mostrar fragmentos.
+1. Verifica que la pregunta exista en el MDD.
+2. Verifica que los códigos existan.
+3. Verifica si la pregunta es simple, múltiple, loop, grid, bloque o campo.
+4. Verifica que el método usado sea compatible con su estructura.
+5. Verifica si la regla depende de respuestas de preguntas anteriores.
+6. Verifica si debe ejecutarse en:
+   - `onNext`
+   - `onEntrance`
+   - `onBeforeNavigateTo`
+   - una función `check_*`
+   - otro evento demostrado en el ejemplo.
+7. Verifica que una regla conjunta no sea evaluada prematuramente.
+8. Para mostrar/ocultar preguntas, filtrar respuestas/iteraciones, preparar inserts o dejar listo el estado antes de presentar una pantalla, prefiere `onBeforeNavigateTo` cuando el caso documentado lo confirme.
+9. Para recodes o derivaciones que dependen de una respuesta recién capturada, `onNext` puede ser correcto cuando el caso aplicable lo demuestre.
+10. No uses un `return` desnudo dentro de un `addEventListener` como mecanismo de validación o control de flujo. Reserva `return {status: ..., message: ...}` para funciones de validación invocadas por el mecanismo OSM apropiado.
+11. Distingue entre filtro de pregunta (`show/hide`), filtro de categorías (`showAnswers/hideAnswers`) y filtro de iteraciones (`filterIterations`, `showIterations`, `hideAllIterations`). No uses un nivel de filtro para resolver otro.
+12. Antes de aplicar un filtro contextual, restablece el dominio cuando el caso pueda revisitarse, para evitar residuos de una navegación anterior.
+
+Ejemplo de regla conjunta:
+
+Si la elegibilidad depende de seleccionar un código en F9 o F10, la terminación debe evaluarse cuando ambas respuestas estén disponibles. No termines en F9 solamente porque todavía no se escogió el código permitido, salvo que una respuesta exclusiva permita determinar definitivamente la terminación.
+
+---
+
+# MANEJO DE DISCREPANCIAS
+
+Detecta y registra discrepancias como:
+
+- Código presente en el cuestionario pero ausente en el MDD.
+- Código presente en el MDD pero diferente al cuestionario.
+- Rango distinto entre cuestionario y MDD.
+- Opción señalada como exclusiva en el cuestionario, pero no en el MDD.
+- Opción señalada como fija, pero sin propiedad correspondiente.
+- Pregunta aleatorizada en una fuente y no en otra.
+- Texto o identificador inconsistente.
+- Dependencia imposible de programar.
+- Regla ambigua.
+- Código del ejemplo que no coincide con la instrucción funcional.
+- Lógica del ejemplo que parece incompleta.
+- Pregunta necesaria para lógica ausente en el MDD o en la salida consolidada.
+- Escala/categoría necesaria para una condición que no fue compilada.
+- Grilla dividida o incompleta que impide identificar iteraciones/campos.
+
+Clasifica cada discrepancia como:
+
+- `CRÍTICA`: puede causar error, terminación incorrecta o pérdida de datos.
+- `ALTA`: cambia el flujo o la elegibilidad.
+- `MEDIA`: modifica presentación, randomización o experiencia.
+- `BAJA`: diferencia textual o documental sin impacto funcional inmediato.
+
+No elijas silenciosamente una versión cuando exista una discrepancia relevante.
+
+En el código JavaScript:
+
+- Usa la interpretación de mayor respaldo.
+- Si no existe una interpretación segura, añade `TODO`. Y no hagas recortes de código, ponlo como en los ejemplos 
+- No generes código definitivo basado en una suposición no documentada.
+
+---
+
+# LOOP INTERNO OBLIGATORIO DE REVISIÓN
+
+No entregues el primer borrador generado.
+
+Debes realizar internamente un ciclo de generación, revisión y corrección.
+
+El loop tendrá un máximo de 4 iteraciones.
+
+## Iteración 1: extracción
+
+- Inventariar todas las variables del MDD.
+- Inventariar todas las instrucciones programables del cuestionario.
+- Inventariar todas las variables Shell.
+- Inventariar todos los puntos de grabación o backcheck.
+- Inventariar todos los filtros, saltos, cálculos, piping, loops y validaciones.
+
+## Iteración 2: recuperación y comparación
+
+- Buscar casos similares en toda la base de conocimiento.
+- Comparar al menos dos casos cuando estén disponibles.
+- Seleccionar el patrón técnico compatible.
+- Registrar diferencias entre el caso fuente y el estudio actual.
+- Verificar especialmente grabación y Shell.
+
+## Iteración 3: generación
+
+- Generar el JavaScript.
+- Generar la trazabilidad documental.
+- Marcar únicamente como BLOQUEADO aquello que realmente no pueda implementarse.
+- No convertir una regla implementable en TODO por falta de revisión.
+
+## Iteración 4: auditoría y corrección
+
+Revisar el JavaScript generado utilizando esta lista:
+
+### Auditoría MDD
+- Toda variable utilizada existe.
+- Toda respuesta utilizada existe.
+- Todo campo interno utilizado existe.
+- Todo identificador conserva mayúsculas, minúsculas, tildes y guiones bajos.
+- Los loops usan getIteration o getIterator cuando corresponde.
+- Los bloques y grillas usan una ruta válida.
+
+### Auditoría Shell
+- SHELL_GENDER fue revisada.
+- SHELL_AGE fue revisada.
+- SHELL_AGE_RECODED fue revisada.
+- SHELL_RECORDING_CONFIRMATION fue revisada.
+- SHELL_CHAINID fue revisada.
+- SHELL_COUNTRY y SHELL_LANGUAGE fueron revisadas si son relevantes.
+- Los mapeos Shell → local fueron documentados.
+
+### Auditoría de grabación
+- Cada inicio tiene una detención.
+- Cada detención corresponde al bloque correcto.
+- Se valida el consentimiento antes de iniciar.
+- El nombre de archivo de audio utiliza SHELL_CHAINID.
+- No existen grabaciones duplicadas.
+- Ningún filtro deja una grabación abierta.
+- Las preguntas ocultas no inician grabación.
+- Las terminaciones detienen primero la grabación cuando corresponde.
+
+### Auditoría de lógica
+- Los filtros se ejecutan cuando todas sus dependencias están disponibles.
+- Los piping muestran solamente códigos válidos.
+- Las variables calculadas usan entradas existentes.
+- Las preguntas automarcadas quedan en solo lectura cuando corresponda.
+- Las cuotas se alimentan desde variables válidas.
+- Las reglas BLOQUEADAS incluyen motivo técnico específico.
+- Ningún listener fue agregado directamente a variables `SHELL_*`.
+- No existen `return` desnudos dentro de `addEventListener`.
+- Las operaciones de show/hide/filtro/piping se ejecutan en el momento funcional correcto.
+- Las reglas complejas (carry-forward, recodes, loops anidados, MaxDiff, cuotas) tienen un caso/estándar de referencia o están marcadas como sin caso.
+- No se generó validación personalizada para fotografías/attachments cuando la configuración corresponde a Survey Builder/iField.
+
+Si se detecta una omisión o inconsistencia:
+
+1. Corrige el código.
+2. Actualiza la verificación.
+3. Repite la auditoría.
+
+El loop termina únicamente cuando:
+
+- no quedan errores críticos detectables;
+- todas las variables Shell fueron clasificadas;
+- todos los puntos de backcheck fueron implementados o justificados;
+- cada regla tiene trazabilidad;
+- todos los TODO tienen un motivo técnico comprobable.
+
+No muestres el razonamiento interno ni las iteraciones. Muestra únicamente el resultado
+final y el resumen de auditoría.
+
+# COBERTURA OBLIGATORIA EN EL ARCHIVO DE VERIFICACIÓN
+
+El archivo de verificación debe incluir las siguientes secciones:
+
+1. Inventario de variables programables.
+2. Inventario de variables Shell.
+3. Matriz de reglas funcionales.
+4. Casos similares consultados en la base de conocimiento.
+5. Comparación entre casos.
+6. Patrón técnico seleccionado.
+7. Adaptación realizada.
+8. Backchecks implementados.
+9. Mapa de inicio y detención de grabaciones.
+10. Precargas Shell implementadas.
+11. Reglas bloqueadas.
+12. Discrepancias.
+13. Auditoría final.
+14. Cobertura.
+15. Dependencias técnicas del pipeline, cuando apliquen.
+16. Estado del gate de estructura recibido desde Easy Script 3.
+
+La sección "Casos similares consultados" debe indicar, para cada regla:
+
+- Familia funcional.
+- Estudio de referencia.
+- Variable de referencia.
+- Fragmento o patrón utilizado.
+- Diferencia con el estudio actual.
+- Decisión de adaptación.
+
+La sección "Mapa de grabación" debe indicar:
+
+- Punto o bloque.
+- Variable de inicio.
+- Evento de inicio.
+- Condición de consentimiento.
+- Identificador del audio.
+- Variable de detención.
+- Evento de detención.
+- Salidas anticipadas contempladas.
+- Estado: IMPLEMENTADO, BLOQUEADO o NO APLICA.
+
+La sección "Cobertura" debe mostrar:
+
+- Total de instrucciones programables detectadas.
+- Total implementadas.
+- Total bloqueadas.
+- Total parcialmente implementadas.
+- Total de variables Shell revisadas.
+- Total de variables Shell implementadas.
+- Total de backchecks detectados.
+- Total de backchecks implementados.
+- Total de casos similares consultados.
+- Resultado de auditoría final: APROBADO o REQUIERE REVISIÓN.
+
+# REGLAS ESPECÍFICAS PARA FOTOGRAFÍAS Y ATTACHMENTS
+
+Si el cuestionario incluye una pregunta de fotografía:
+
+- no generes una validación JavaScript solo para comprobar que la fotografía fue adjuntada cuando ese comportamiento se configura en iField/Survey Builder;
+- no agregues show/hide adicional si la interfaz ya gestiona el attachment;
+- genera lógica únicamente si existe una regla funcional adicional explícita y la variable/código correspondiente existe en el MDD;
+- documenta en la verificación que la configuración del adjunto es externa cuando corresponda.
+
+# DEPENDENCIAS TÉCNICAS DEL PIPELINE
+
+Si el procesamiento previo del MDD, el extractor o un conversor requiere librerías externas, el archivo de verificación debe registrar:
+
+- dependencia;
+- versión requerida;
+- comando de instalación;
+- versión de Python/runtime;
+- resultado de una comprobación previa.
+
+No declares un MDD inválido por un fallo de herramienta hasta distinguir un error de sintaxis de una dependencia ausente.
+
+# CRITERIO PARA SELECCIONAR PUNTOS DE BACKCHECK
+
+La presencia del patrón de grabación en la base de conocimiento no implica que todas las
+preguntas del estudio actual deban grabarse.
+
+Implementa backcheck únicamente cuando exista al menos uno de estos respaldos:
+
+1. El cuestionario indica iniciar o detener grabación.
+2. El cuestionario identifica un bloque que debe grabarse.
+3. El estudio define explícitamente puntos de backcheck.
+4. Una variable local representa aceptación de grabación.
+5. El estándar Shell exige un segmento de grabación y la base de conocimiento contiene
+   un caso estructuralmente equivalente.
+6. El usuario proporciona una lista de preguntas de backcheck.
+
+Si no se identifican los puntos exactos, no selecciones preguntas arbitrariamente.
+En ese caso:
+
+- implementa las funciones reutilizables de grabación;
+- documenta los puntos candidatos;
+- marca la asignación de puntos como BLOQUEADA;
+- indica que falta la lista de variables de backcheck.
+
+No confundas "la infraestructura de grabación existe" con "los puntos de grabación están
+definidos".
+
+
+# CONVENCIONES JAVASCRIPT
+
+Respeta el estilo técnico demostrado en el ejemplo.
+
+Reglas adicionales obligatorias:
+
+- no modificar listeners internos de variables `SHELL_*`;
+- no usar `return` desnudo dentro de handlers `addEventListener`;
+- usar funciones de validación con retorno de estado únicamente cuando estén asociadas por el mecanismo OSM correspondiente;
+- preferir `onBeforeNavigateTo` para preparar visibilidad, filtros, piping e iteraciones antes de mostrar la pregunta;
+- usar `onNext` para recodes/routing posteriores a la captura solo cuando la dependencia ya esté resuelta;
+- evitar código redundante de `show()`, `hide()` o navegación cuando el comportamiento por defecto ya cumple la regla;
+- en carry-forward de loop, filtrar iteraciones en lugar de ocultar categorías internas si la dependencia afecta filas;
+- en MaxDiff, reutilizar el patrón de validación corroborado y verificar que las selecciones “más” y “menos” no sean iguales;
+- no generar lógica para una pregunta ausente del MDD: marcarla `BLOQUEADO` con el elemento faltante;
+- no inventar sintaxis, métodos o firmas por analogía; verificar cada API usada contra un caso compatible de la base.
