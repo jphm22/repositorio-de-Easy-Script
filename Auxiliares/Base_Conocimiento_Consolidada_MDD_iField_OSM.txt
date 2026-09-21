@@ -1,0 +1,2018 @@
+BASE DE CONOCIMIENTO CONSOLIDADA
+CUESTIONARIOS, MDD, iFIELD Y OSM
+
+Versión consolidada: 2.0
+Fecha: 21 de septiembre de 2026
+Formato: texto plano
+
+PROPÓSITO
+
+Este documento consolida los estándares conceptuales, criterios de construcción y casos de referencia contenidos en:
+
+1. Base_Conocimiento_Estandares_Criterios_Cuestionarios_MDD_iField_OSM.md
+2. Metatool Ifield V3 1 (1).txt
+3. Ejemplo de Casos.txt
+
+La consolidación elimina repeticiones, omite instrucciones relacionadas con JSON y mantiene únicamente información útil para interpretar cuestionarios, construir estructuras MDD, implementar comportamiento en iField/OSM y validar la trazabilidad entre requerimiento, modelo y ejecución.
+
+PRINCIPIO CENTRAL
+
+Cada solución debe distinguir cuatro capas:
+
+1. Cuestionario: especifica qué debe ocurrir.
+2. MDD: declara qué datos existen y cómo se estructuran.
+3. Lógica OSM: implementa dependencias y comportamiento dinámico.
+4. Shell o infraestructura: resuelve identificación, grabación, estado y controles operativos.
+
+La analogía con otros estudios sirve como referencia, pero la evidencia del caso concreto siempre tiene prioridad.
+
+Base de conocimiento técnica de estándares y criterios conceptuales para Cuestionarios, Lógica, MDD, iField y OSM
+
+Versión: 1.0  
+Fecha de consolidación: 21 de septiembre de 2026  
+Finalidad: referencia conceptual y técnica reutilizable para analizar nuevos estudios, justificar decisiones de construcción y mantener trazabilidad entre cuestionario, MDD y lógica de ejecución en iField/OSM.
+
+0. Propósito y alcance
+
+Esta base de conocimiento consolida criterios observados y documentados en los archivos de cuestionario, lógica y MDD de las familias BHT/MSU/CRE, CEX, INN y OBV/PA/TRENDS/CPR, junto con los documentos Analizador Lógico de Cuestionarios (1), Base_Conocimiento_Consolidada_Cuestionarios_MDD_iField_OSM, Base_Conocimiento_Tecnica_Criterios_MDD, Metatool Ifield V3 1 (1) y Ejemplo de Casos.TXT.
+
+El objetivo no es resumir esos archivos, sino convertir su evidencia conjunta en un sistema de criterios que permita responder, para un nuevo estudio:
+
+- qué representa cada indicación del cuestionario;
+- qué parte pertenece al modelo MDD;
+- qué parte requiere comportamiento de ejecución;
+- cómo se relacionan preguntas, categorías, campos, loops, bloques y propiedades OSM;
+- cuándo corresponde usar filtros, condiciones, recodes o validaciones;
+- qué estructura debe mantenerse estable y qué estructura depende del contexto;
+- qué patrones han sido corroborados por casos reales;
+- qué decisiones no deben generalizarse sin evidencia adicional.
+
+La base se concentra exclusivamente en Cuestionarios, Lógica, MDD, iField y OSM.
+
+1. Fuentes y función de cada grupo documental
+
+| Fuente | Función dentro de esta base | Valor principal |
+
+| Cuestionarios BHT/MSU/CRE | Especificación funcional | Indicaciones PROG, cardinalidades, filtros, carry-forward, sumas, recodes, escalas y routing. |
+| Lógica BHT/MSU/CRE | Evidencia de ejecución | Funciones de validación, eventos, filtrado de iteraciones, recálculos y control de navegación. |
+| MDD BHT/MSU/CRE | Evidencia declarativa | Loops, listas, campos numéricos, propiedades OSM y asociación de funciones de validación. |
+| Cuestionarios CEX | Especificación funcional | Aplicabilidad por segmento, cuotas, escalas, preguntas exact-N y variables derivadas. |
+| Lógica CEX | Evidencia de ejecución | show/hide, filtros de alternativas, recodes, inserciones dinámicas, lectura protegida y eventos. |
+| MDD CEX | Evidencia declarativa | Cardinalidades, loops, escalas, variables auxiliares y propiedades OSM. |
+| Cuestionarios INN | Especificación funcional | Filtros de reclutamiento, carry-forward, matrices, productos, condiciones y terminaciones. |
+| Lógica INN | Evidencia de ejecución | filterIterations, routing, grabación, controles de filtro y comportamiento por evento. |
+| MDD INN | Evidencia declarativa | Listas reutilizables, loops, campos por iteración, other, fix, modos de visualización y piping. |
+| Cuestionarios OBV/PA/TRENDS/CPR | Especificación funcional | Backcheck, baterías de reputación, rotación, filtros por códigos previos y estructuras complejas. |
+| Lógica OBV/PA/TRENDS/CPR | Evidencia de ejecución | Grabación, filtrado de loops, visibilidad, validaciones y comportamiento de baterías. |
+| MDD OBV/PA/TRENDS/CPR | Evidencia declarativa | ran fields, expand grid, loops anidados, escalas y propiedades OSM de matrices. |
+| Analizador Lógico de Cuestionarios (1) | Norma de interpretación | Jerarquía, pertenencia, orden, fidelidad, clasificación funcional e inferencia limitada. |
+| Base de Conocimiento Consolidada | Marco integrador | Separación de capas, perfiles de implementación, reglas de evidencia y QA. |
+| Base de Conocimiento Técnica — Criterios MDD | Catálogo técnico | Patrones MDD + comportamiento, casos tripartitos y criterios de decisión. |
+| Metatool iField V3.1 | Norma de construcción | Reglas de conversión, instrucciones, tipos, cardinalidades, loops, grids, listas, bloques y propiedades OSM. |
+| Ejemplo de Casos.TXT | Catálogo de referentes | Correspondencias rápidas entre indicación, MDD y lógica; ejemplos de matrices, backcheck, nested loops y filtros. |
+
+1.1 Regla de corroboración
+
+Un patrón se considera estándar reutilizable cuando la relación funcional está respaldada por suficiente evidencia entre las capas disponibles. La simple presencia de una sintaxis en un archivo no demuestra por sí sola que sea la solución universal para cualquier cuestionario parecido.
+
+Se utilizarán cuatro niveles de evidencia:
+
+| Nivel | Evidencia disponible | Uso permitido |
+
+| A — corroborado extremo a extremo | Cuestionario + MDD + lógica vinculables por ID o función. | Puede documentarse como patrón fuerte y reutilizable, manteniendo sus condiciones. |
+| B — estructural corroborado | Cuestionario + MDD, sin necesidad de comportamiento adicional o sin lógica visible. | Puede documentarse como estándar declarativo. |
+| C — técnico contextual | MDD o lógica con función técnica observable, pero sin requisito funcional completo en el cuestionario. | Puede documentarse como mecanismo, no como regla de negocio universal. |
+| D — requisito sin implementación verificable | El cuestionario exige una conducta, pero no existe correspondencia suficiente en los archivos revisados. | Se documenta como requisito; no se inventa la implementación. |
+
+Regla: ante contradicción entre un referente resumido y la evidencia tripartita del estudio, prevalece la trazabilidad directa Cuestionario → MDD → Lógica del caso concreto.
+
+Parte I — Modelo conceptual de construcción
+
+2. Las cuatro capas que deben mantenerse separadas
+
+2.1 Capa 1 — Especificación funcional del cuestionario
+
+Describe qué debe suceder desde el punto de vista del estudio:
+
+- qué se pregunta;
+- qué opciones existen;
+- qué códigos están asociados;
+- si la respuesta es única, múltiple o exacta;
+- qué elementos se rotan;
+- cuándo se muestra una pregunta;
+- qué respuestas se arrastran;
+- qué condiciones terminan o desvían la entrevista;
+- qué debe validar el sistema;
+- qué instrucciones recibe el encuestador.
+
+La especificación funcional no determina por sí sola toda la sintaxis de implementación.
+
+2.2 Capa 2 — Modelo declarativo MDD
+
+Describe qué dato existe y cómo se estructura de forma estable:
+
+- tipo de variable;
+- cardinalidad;
+- categorías y códigos;
+- campos abiertos;
+- listas reutilizables;
+- loops;
+- fields;
+- grids;
+- blocks;
+- propiedades OSM asociadas al nodo;
+- límites simples del propio campo.
+
+Principio: aquello que pertenece al contrato estable del dato debe expresarse, cuando sea posible, declarativamente en MDD.
+
+2.3 Capa 3 — Comportamiento de ejecución
+
+Describe qué cambia en función del contexto de la entrevista:
+
+- mostrar u ocultar preguntas;
+- mostrar u ocultar categorías;
+- filtrar iteraciones de un loop;
+- trasladar respuestas previas;
+- producir variables derivadas;
+- insertar texto dinámico;
+- validar relaciones entre varias respuestas;
+- redirigir o terminar una entrevista;
+- ejecutar controles en eventos concretos.
+
+En los archivos, esta capa se implementa mediante objetos y eventos de OSM.Survey.
+
+2.4 Capa 4 — Infraestructura operativa o Shell
+
+Incluye elementos técnicos que pueden no tener una pregunta equivalente en el cuestionario:
+
+- identificadores de caso;
+- estado de la entrevista;
+- fechas y tiempos técnicos;
+- grabación silenciosa;
+- flags de calidad;
+- GPS o ubicación cuando aplica;
+- adjuntos;
+- controles de plataforma;
+- metadatos de ejecución.
+
+Regla: no confundir infraestructura con lógica de negocio del cuestionario.
+
+3. Cadena de trazabilidad estándar
+
+La relación ideal es:
+
+> Indicación funcional del cuestionario → nodo o estructura MDD → comportamiento OSM cuando sea necesario → dato final o efecto observable
+
+Ejemplo conceptual:
+
+> “MÁX. 3 RESPUESTAS” → categorical [1..3] → sin lógica adicional si no hay otra dependencia → el encuestado no puede registrar más de tres categorías.
+
+Ejemplo con dependencia:
+
+> “MOSTRAR SOLO OPCIONES MENCIONADAS EN F21” → F22 se modela como loop con el universo estructural → onBeforeNavigateTo filtra las iteraciones según F21.getAnswers() → solo aparecen los productos seleccionados anteriormente.
+
+El ID funcional estable es normalmente el eje de esta trazabilidad. En los casos revisados, el mismo identificador suele aparecer como pregunta del cuestionario, declaración MDD y referencia OSM.Survey..
+
+Parte II — Estándares de interpretación del cuestionario
+
+4. STD-AN-01 — Clasificar por función, no por apariencia
+
+Criterio. La naturaleza de un elemento se determina por lo que hace y por su relación con otros nodos, no únicamente por su color, posición, tabla, columna, página o formato visual.
+
+Se utiliza cuando:
+
+- una tabla contiene simultáneamente atributos, escalas, instrucciones y códigos;
+- una indicación aparece al lado de una pregunta pero actúa sobre todo un bloque;
+- un texto parece encabezado visual, pero en realidad es una instrucción del entrevistador;
+- una matriz debe descomponerse en loop + campo de respuesta.
+
+Implementación conceptual:
+
+- identificar primero la unidad lógica;
+- asignar cada elemento al nodo más específico sobre el que actúa;
+- conservar el orden lógico aunque la maquetación física corte la información.
+
+Por qué: evita convertir accidentalmente columnas, celdas o textos decorativos en variables independientes.
+
+Patrón reutilizable: analizar siempre función → pertenencia → estructura → formato, en ese orden.
+
+Fuente conceptual: Analizador Lógico de Cuestionarios, secciones de representación lógica, pertenencia y orden; Base Consolidada, reglas de fidelidad y función sobre apariencia.
+
+5. STD-AN-02 — Pertenencia al nodo más específico
+
+Criterio. Una indicación, escala, alternativa o campo debe asociarse al elemento más específico al que realmente pertenece.
+
+Ejemplos de aplicación:
+
+- “ENC: LEER OPCIONES” asociado a una pregunta concreta no debe convertirse en texto informativo general;
+- “Otro, ¿cuál?” pertenece a la categoría “Otro”, no a una pregunta abierta independiente si el diseño muestra dependencia directa;
+- una escala compartida de una batería pertenece al campo repetido dentro del loop;
+- una restricción de respuesta por fila pertenece al campo Rp, no al loop en sí.
+
+Patrón reutilizable: cuanto más específica sea la relación funcional, más abajo debe colocarse la propiedad o campo dentro de la estructura.
+
+6. STD-AN-03 — Fidelidad del contenido y separación entre wording y código
+
+Criterio. El texto visible, los códigos y los IDs son elementos distintos. No deben fusionarse salvo que el código sea parte visible del wording original.
+
+Reglas:
+
+- conservar el wording original;
+- conservar códigos expresamente asociados;
+- no corregir silenciosamente redacción, puntuación o etiquetas;
+- no agregar un código numérico al texto visible si el documento lo presenta únicamente como código técnico;
+- no interpretar el número de una categoría como tipo de dato numérico.
+
+Ejemplo: una categoría con código 99 sigue siendo una categoría de una variable categórica; el 99 no convierte la pregunta en numérica.
+
+Utilidad: mantiene compatibilidad entre instrumento, base de datos y documentación de campo.
+
+7. STD-AN-04 — Inferencia limitada
+
+Criterio. Puede inferirse una función estructural cuando la evidencia es inequívoca, pero no debe inventarse contenido ni comportamiento ausente.
+
+Se puede inferir, con evidencia suficiente
+
+- que “RU” implica una selección;
+- que “RM” implica múltiples selecciones;
+- que “preguntar por cada marca” sugiere una iteración;
+- que “mostrar solo los seleccionados” exige una dependencia;
+- que una escala común a varias filas es un patrón de matriz.
+
+No se debe inferir sin evidencia
+
+- límites no escritos;
+- códigos faltantes;
+- exclusividad solo por costumbre;
+- una semántica universal para 94, 96, 98 o 99;
+- el significado de un valor numérico de _Osm_QuestionLayoutID o _Osm_ContentRuleID;
+- un filtro, recode o terminación porque otro estudio similar lo use.
+
+8. STD-AN-05 — Clasificación de indicaciones
+
+8.1 Indicación para el entrevistador
+
+Describe una acción humana: leer, mostrar tarjeta, no leer, registrar, profundizar, comparar, solicitar material o realizar una acción de campo.
+
+Tratamiento:
+
+- si forma parte del inicio o del wording intercalado, puede permanecer integrada en el texto;
+- si aparece al final o separada y está asociada inequívocamente a la pregunta, puede representarse mediante _Osm_HiddenComment;
+- si es general para una sección y debe verse, puede representarse como información del instrumento.
+
+Caso de referencia: Ejemplo de Casos.TXT transforma “MOSTRAR TARJETA CANDIDATOS – ROTACIÓN A o B” y “MOSTRAR TARJETA S8” en _Osm_HiddenComment.
+
+8.2 Indicación para programación
+
+Describe comportamiento: filtros, saltos, restricciones, recodes, validaciones, rotaciones, aplicabilidad, cuotas o terminaciones.
+
+Tratamiento:
+
+- si define estructura estable, se refleja en MDD;
+- si depende de otras respuestas o del estado de ejecución, se implementa en lógica;
+- una misma indicación puede tener una parte declarativa y otra dinámica.
+
+8.3 Indicación con doble función
+
+Una frase puede informar al entrevistador y al mismo tiempo exigir comportamiento. Deben modelarse ambos efectos sin duplicar innecesariamente el texto.
+
+Parte III — Estándares de tipos, cardinalidad y categorías
+
+9. STD-MDD-01 — Cardinalidad como regla semántica
+
+La cardinalidad define cuántas selecciones son válidas; no es decoración de sintaxis.
+
+| Indicación funcional | Construcción MDD típica | Observación |
+
+| RU / única | categorical [1..1] | Una respuesta obligatoria cuando no existe evidencia de opcionalidad. |
+| RM / múltiple | categorical [1..] | Sin máximo solo cuando el cuestionario tampoco lo limita. |
+| Exactamente N | categorical [N..N] | La restricción queda en el contrato del dato. |
+| Máximo N | categorical [1..N] o [0..N] | El mínimo depende de evidencia de obligatoriedad/opcionalidad. |
+| Mínimo N | categorical [N..] | Solo si el mínimo está expresamente indicado. |
+
+Caso EJ-01 — Máximo 3 respuestas
+
+Ejemplo de Casos.TXT documenta directamente:
+
+``mdd
+categorical [1..3]
+`
+
+para la indicación “MÁX. 3 RESPUESTAS”.
+
+Caso CEX-PECON4 — Exactamente tres
+
+El cuestionario indica “SELECCIONE SOLO TRES OPCIONES” y “PERMITIR MARCAR SOLO TRES OPCIONES”. El MDD implementa:
+
+`mdd
+categorical [3..3]
+`
+
+La lógica adicional se dedica a cambiar wording y disponibilidad de categorías por segmento; no vuelve a implementar la regla de tres selecciones.
+
+Patrón reutilizable: toda restricción que pueda expresarse como cardinalidad propia del campo debe declararse ahí antes de considerar lógica adicional.
+
+10. STD-MDD-02 — Prevalencia del tipo categórico cuando existen opciones explícitas
+
+Si el usuario elige entre alternativas codificadas, la variable es categórica, aunque:
+
+- los códigos sean números;
+- alguna alternativa tenga un campo abierto;
+- el wording parezca preguntar por una cantidad verbalizada.
+
+Un campo abierto dependiente de una categoría no cambia el tipo principal de la pregunta.
+
+11. STD-MDD-03 — Campos abiertos y other
+
+Cuando usar un campo asociado
+
+Cuando una categoría visible exige capturar información adicional, por ejemplo “Otro, especificar”, la captura abierta pertenece a esa categoría.
+
+Patrón:
+
+`mdd
+_94 "Otros" other(_C_94 "" text [0..200])
+`
+
+La forma exacta puede variar por estudio; el criterio es la dependencia inequívoca entre categoría y campo.
+
+Cuando no usarlo
+
+No crear un other únicamente porque exista una categoría llamada “Otros” si el cuestionario no solicita especificación o no hay evidencia de campo asociado.
+
+fix y exclusive
+
+- fix conserva una opción fuera del universo que se rota o aleatoriza.
+- exclusive impide combinarla con otras respuestas cuando el significado funcional exige exclusividad.
+- fix exclusive combina ambas funciones.
+
+Regla crítica: códigos como 94, 96, 98 o 99 no tienen una semántica universal. La decisión depende del texto y del comportamiento del caso concreto.
+
+12. STD-MDD-04 — Tipos no categóricos
+
+| Requisito | Tipo conceptual | Criterio |
+
+| Texto libre | text | Aplicar longitud solo si está especificada o existe convención corroborada del proyecto. |
+| Entero | long | Usar rango cuando el cuestionario lo defina. |
+| Decimal | double | Usar precisión/rango según evidencia. |
+| Fecha | date | Los límites de fecha son declarativos cuando son propios del campo. |
+
+Distinción: una validación interna del campo puede ser declarativa; una validación que compara con otra variable requiere comportamiento.
+
+Parte IV — Loops, fields, grids y bloques
+
+13. STD-MDD-05 — Loop como estructura de repetición
+
+Qué representa. Un loop modela la repetición de una misma estructura de captura sobre un conjunto de entidades: marcas, productos, atributos, empresas, iniciativas, momentos u otros objetos equivalentes.
+
+Se utiliza cuando:
+
+- se repite la misma pregunta por cada elemento;
+- cada fila de una batería representa una entidad evaluada bajo la misma regla;
+- las respuestas anteriores determinan qué entidades deben evaluarse después.
+
+Anatomía conceptual
+
+`mdd
+PREGUNTA "..."
+loop
+{
+    _1 "Entidad A",
+    _2 "Entidad B",
+    _3 "Entidad C"
+} fields -
+(
+    Rp ""
+    categorical [1..1]
+    {
+        ...
+    };
+) grid;
+`
+
+- El loop define el universo de entidades.
+- fields - (...) define qué campos existen dentro de cada iteración.
+- Rp suele ser el campo de respuesta repetido.
+- La cardinalidad pertenece al campo Rp, no al loop.
+
+14. STD-MDD-06 — fields como contrato de cada iteración
+
+Utilidad. fields encapsula las variables que se capturan por cada atributo del loop.
+
+Puede contener:
+
+- un único campo de respuesta;
+- varios subcampos;
+- otro loop;
+- campos auxiliares cuando la estructura del instrumento lo exige.
+
+Regla: el hecho de que una matriz tenga muchas filas no implica muchas preguntas independientes; puede ser un solo loop con un solo field repetido.
+
+15. STD-MDD-07 — Grid y expand grid
+
+Función conceptual
+
+Un grid es la presentación matricial de la estructura loop + fields. expand grid aparece en los casos revisados como una variante de presentación expandida de esa matriz.
+
+Lo que no cambia
+
+expand grid no sustituye la semántica de:
+
+- loop;
+- atributos;
+- field interno;
+- tipo de respuesta;
+- cardinalidad por fila.
+
+Caso EJ-04 — M5
+
+El cuestionario presenta tres poblaciones a evaluar con las respuestas “Beneficia / Perjudica / NP”. El MDD usa:
+
+`mdd
+loop
+{
+    _1 "...",
+    _2 "...",
+    _3 "..."
+} ran fields -
+(
+    Rp ""
+    categorical [1..1]
+    {
+        _1 "Beneficia",
+        _2 "Perjudica",
+        _99 "NP" fix exclusive
+    };
+) expand grid;
+`
+
+Interpretación:
+
+- cada población es un atributo;
+- las filas se aleatorizan;
+- cada fila admite una sola respuesta;
+- “NP” está fija y es exclusiva dentro de la escala;
+- la matriz se presenta expandida.
+
+Patrón reutilizable: una batería de filas con escala común se modela normalmente como un loop + un field de respuesta común, no como una pregunta distinta por cada fila.
+
+16. STD-MDD-08 — ran fields y aleatorización de filas
+
+ran fields aparece cuando el universo del loop debe presentarse en orden aleatorio.
+
+Distinción esencial
+
+- } ran fields - → aleatoriza las iteraciones/filas del loop.
+- } ran; → aleatoriza categorías de una pregunta categórica.
+
+No son equivalentes.
+
+Opciones residuales o fijas
+
+Cuando una alternativa no debe participar en la rotación —por ejemplo “Ninguno”, “No precisa” u otro residual según el caso— debe quedar fuera del universo rotado o marcada como fija de acuerdo con la estructura usada.
+
+No generalizar: el comportamiento depende de la evidencia del cuestionario.
+
+17. STD-MDD-09 — Una escala compartida debe ser una sola subpregunta
+
+Cuando todas las filas usan exactamente la misma escala, el patrón recomendado es:
+
+> loop de atributos → un solo campo Rp → escala común.
+
+No crear una subpregunta distinta por atributo salvo que cada atributo tenga realmente una consulta diferente.
+
+Este criterio aparece tanto en el Analizador, como en Metatool y en los casos M5, P1–P4, I2 e I3.
+
+18. STD-MDD-10 — _Osm_DisplayMode = 3 para evaluación atributo por atributo o estructuras no-grid simples
+
+En el corpus, _Osm_DisplayMode = 3 aparece en loops donde la presentación no debe comportarse como una matriz tradicional única o donde existe una interacción secuencial/por atributo.
+
+Usos corroborados:
+
+- P18, donde se capturan primera, segunda y tercera mención mediante iteraciones;
+- F22 de INN, donde se pregunta frecuencia por cada forma de consumo trasladada desde F21;
+- loops complejos o con múltiples componentes donde una vista matricial completa no es la opción adecuada.
+
+Criterio: la propiedad afecta la presentación/recorrido del nodo; no cambia por sí misma el tipo de dato del field interno.
+
+19. STD-MDD-11 — Loops anidados para jerarquías de repetición
+
+Qué representan. Una estructura anidada aparece cuando existe una repetición dentro de otra repetición.
+
+Caso EJ-06 — P5
+
+El referente de P5 modela una capa externa de empresas y una capa interna de drivers/atributos. La construcción conserva dos dimensiones distintas:
+
+> empresa evaluada → atributo/driver dentro de esa empresa → respuesta.
+
+Por qué usar anidamiento: evita aplanar artificialmente dos dimensiones semánticas y conserva la relación jerárquica del instrumento.
+
+Reglas reutilizables:
+
+1. cada loop debe representar una dimensión repetitiva real;
+2. no anidar solo por conveniencia visual;
+3. las condiciones pueden actuar sobre el loop externo, el interno o el field;
+4. la validación debe identificar correctamente el nivel sobre el que opera;
+5. los IDs internos deben evitar ambigüedad entre nombre del loop y nombre del field.
+
+20. STD-MDD-12 — Blocks para agrupación, no para repetición
+
+Un block agrupa controles heterogéneos que deben funcionar o presentarse conjuntamente.
+
+Cuándo usarlo
+
+- el cuestionario exige explícitamente mismo screen o presentación conjunta;
+- existe una unidad funcional de varias preguntas diferentes;
+- la implementación observada agrupa nodos con una razón de navegación/presentación.
+
+Cuándo no usarlo
+
+- solo porque dos preguntas están próximas visualmente;
+- para representar una batería repetitiva: en ese caso corresponde un loop;
+- como reemplazo de una sección documental sin efecto funcional.
+
+Distinción fundamental:
+
+> block agrupa; loop repite.
+
+21. STD-MDD-13 — Listas reutilizables define/use
+
+Utilidad. Separar un catálogo común de categorías de las preguntas que lo reutilizan.
+
+Cuándo usar
+
+- el mismo conjunto de respuestas aparece en varias preguntas;
+- varias estructuras deben mantenerse alineadas;
+- el catálogo es conceptualmente estable y reutilizable.
+
+Patrón
+
+`mdd
+lstFrecuencia "" define
+{
+    ...
+};
+
+PREGUNTA ...
+{
+    use lstFrecuencia ""
+};
+`
+
+Regla de diseño
+
+No incluir en la lista común categorías residuales o campos específicos que solo aplican a una de las preguntas si eso distorsiona las otras reutilizaciones.
+
+Caso corroborado: F22 del estudio INN utiliza una lista de frecuencia reutilizable dentro de un loop filtrado por F21.
+
+Parte V — OSM y propiedades _Osm_*
+
+22. Rol de OSM
+
+En los archivos, OSM cumple dos funciones principales:
+
+1. metadatos de comportamiento/presentación declarados en MDD mediante propiedades _Osm_*;
+2. API de ejecución mediante OSM.Survey, usada para operar sobre preguntas, loops, respuestas, navegación, inserts, grabación y estado.
+
+No debe asumirse que todo comportamiento OSM pertenece al MDD ni que toda propiedad _Osm_* constituye una regla de negocio.
+
+23. CAT-OSM — Catálogo conceptual de propiedades observadas
+
+| Propiedad | Utilidad conceptual observada | Criterio de uso |
+
+| _Osm_HiddenComment | Mostrar instrucción operativa asociada a la pregunta sin convertirla en respuesta. | Usar para indicaciones del encuestador asociadas inequívocamente al nodo; no usar como depósito de lógica de flujo. |
+| _Osm_IsRequired | Controlar obligatoriedad a nivel OSM. | Aparece especialmente en variables técnicas/sistema; copiar según evidencia. |
+| _Osm_IsNumbered | Controlar numeración visible. | Útil cuando el ID o el orden visual no debe generar numeración automática. |
+| _Osm_DisplayMode | Modificar modo de presentación/recorrido. | El valor 3 está corroborado en evaluaciones por atributo y loops no tratados como grid simple. No inferir otros valores por número. |
+| _Osm_ShowQuestionTexts | Suprimir/reducir repetición de textos de pregunta en matrices. | Usar solo cuando el diseño de la matriz lo requiera y exista evidencia. |
+| _Osm_ShowChildNodeTexts | Controlar visualización de textos de nodos hijos. | Corroborado en grids/loops; es presentación, no cardinalidad. |
+| _Osm_AllowWatermarks | Propiedad de presentación observada en múltiples matrices. | No agregar por defecto solo porque exista una matriz. |
+| _Osm_CustomFunction | Asociar validación o función específica a un campo/nodo. | Adecuado para reglas del campo que requieren función personalizada; ejemplo SOW y fecha/edad. |
+| _Osm_Placeholder | Texto de ayuda dentro de un campo abierto. | Usar cuando está soportado por plantilla/caso. |
+| _Osm_Label | Etiqueta de un campo asociado. | Común en campos “Other specify” o comentarios. |
+| _Osm_QuestionLayoutID | Identificador de layout de plataforma. | Copiar de patrones corroborados; no deducir su semántica exclusivamente por el número. |
+| _Osm_ContentRuleID | Identificador de regla de contenido/plataforma. | Igual criterio: no inferir significado universal a partir del valor numérico. |
+| _Osm_HintFunction | Asociación a función de soporte/hint observada en preguntas específicas. | No confundir con regla de negocio; conservar solo cuando el estudio la requiere. |
+
+Regla general para _Osm_*
+
+Las propiedades OSM deben considerarse metadatos de presentación, operación o integración. No sustituir con ellas una regla estructural que deba estar en el tipo/cardinalidad, ni una dependencia dinámica que requiera lógica.
+
+Parte VI — Filtros, condiciones y eventos
+
+24. STD-LOG-01 — Diferenciar tres niveles de filtrado
+
+Nivel 1 — Aplicabilidad de la pregunta
+
+La pregunta completa se muestra u oculta.
+
+Mecanismo observado: show() / hide().
+
+Evento habitual: onBeforeNavigateTo.
+
+Caso CEX-P32: P32 solo se muestra si P31 tiene código 1.
+
+Nivel 2 — Disponibilidad de categorías
+
+La pregunta existe, pero el conjunto de respuestas depende del contexto.
+
+Mecanismo observado: showAnswers(...), hideAnswers(...).
+
+Caso CEX-D5: zona urbana/rural cambia qué estratos se pueden seleccionar.
+
+Nivel 3 — Disponibilidad de iteraciones
+
+El loop existe con un universo estructural, pero solo deben ejecutarse determinadas filas.
+
+Mecanismos observados: filterIterations(...), hideAllIterations(), showIterations(...).
+
+Caso INN-F22: solo se preguntan formas de consumo seleccionadas en F21.
+
+Caso OBV-P1→P2/P3/P4/P5: solo se evalúan las empresas que cumplen códigos 2–5 en P1.
+
+Regla: no usar un filtro de respuestas cuando el requisito afecta filas de un loop, ni filtrar iteraciones cuando solo debe cambiar una categoría.
+
+25. STD-LOG-02 — Selección de evento por momento funcional
+
+| Evento | Momento conceptual | Usos frecuentes observados |
+
+| onBeforeNavigateTo | Antes de presentar el nodo | aplicabilidad, show/hide, filtros de respuestas, filtros de iteraciones, inserts dinámicos. |
+| onEntrance | Al entrar al nodo | inicialización operativa, grabación/backcheck, preparación de estado. |
+| onInputChange | Mientras cambia la respuesta | cálculos o feedback inmediato, sumatorias en vivo. |
+| onNext | Después de capturar y antes de continuar | recodes, routing, terminación, validaciones de salida, carry-forward preparado para nodos siguientes, parada de grabación. |
+
+Regla: elegir el evento por el momento en que el efecto debe ser válido, no por costumbre.
+
+26. STD-LOG-03 — Restablecer estado antes de aplicar un filtro contextual
+
+Cuando una pregunta puede visitarse varias veces o el usuario puede retroceder, un filtro aplicado sobre un estado ya reducido puede dejar residuos.
+
+Patrón seguro
+
+1. restablecer el dominio completo;
+2. aplicar el filtro actual;
+3. presentar el nodo.
+
+Caso CEX-D5
+
+La lógica ejecuta showAnswers() antes de ocultar las categorías no válidas para zona rural o urbana.
+
+Caso INN-S11a
+
+La lógica oculta las iteraciones y vuelve a mostrar solo las seleccionadas según el estado actual.
+
+Razón: evita que un filtro anterior sobreviva cuando cambia la respuesta que lo origina.
+
+27. STD-LOG-04 — Carry-forward mediante filtro de iteraciones
+
+Situación: una pregunta posterior debe repetirse solo para elementos seleccionados anteriormente.
+
+Patrón conceptual
+
+- El MDD declara el universo estructural completo del loop posterior.
+- La lógica determina el subconjunto activo usando respuestas previas.
+
+Caso INN-F21→F22
+
+Cuestionario:
+
+- F21 pregunta de forma múltiple cómo consume la bebida/leche de almendra.
+- F22 indica “INSERTAR RESPUESTAS DE F21”, “PREGUNTAR 1 POR 1” y “MOSTRAR SOLO OPCIONES MENCIONADAS EN F21”.
+
+MDD:
+
+- F21 es categórica múltiple.
+- F22 es un loop sobre las mismas formas de consumo, con _Osm_DisplayMode = 3 y un field RU de frecuencia.
+
+Lógica:
+
+`javascript
+OSM.Survey.F22.addEventListener('onBeforeNavigateTo', function(e){
+    var objPregunta = e.sourceElement;
+    var objFiltro = OSM.Survey.F21;
+    objPregunta.filterIterations(objFiltro.getAnswers());
+});
+`
+
+Por qué esta estructura es correcta: el universo de datos permanece definido en MDD; la selección previa solo determina qué iteraciones se ejecutan.
+
+28. STD-LOG-05 — Dependencia entre matrices sucesivas
+
+Caso EJ-05 — Pirámide P1–P4
+
+El cuestionario establece que P2, P3 y P4 aplican solo para empresas con códigos 2–5 en P1.
+
+MDD:
+
+- cada pregunta mantiene su propio loop de empresas y escala;
+- los loops comparten el mismo universo conceptual.
+
+Lógica corroborada en OBV:
+
+1. recorre las iteraciones de P1;
+2. identifica empresas con códigos 2–5;
+3. oculta P2–P5 por defecto;
+4. si existe al menos una empresa elegible, muestra las preguntas;
+5. filtra sus iteraciones al conjunto elegible.
+
+Patrón reutilizable: cuando una batería posterior depende de resultados por fila de una batería previa, no basta con mostrar/ocultar toda la pregunta; normalmente también debe filtrarse el universo de iteraciones.
+
+29. STD-LOG-06 — Texto dinámico y piping
+
+Dos tipos conceptuales
+
+1. Insertar contenido de una variable previa en el wording.
+2. Representar el atributo actual dentro de un loop.
+
+En los archivos se observan patrones como:
+
+- {#VARIABLE#} para inserciones/referencias;
+- {@} para el elemento actual del loop.
+
+Caso CEX-PECON4
+
+El texto de la categoría 2 cambia según el segmento mediante un insert (txtPECON4) y la lógica ejecuta setInsert(...) antes de mostrar la pregunta.
+
+Regla
+
+No usar piping si la fuente, el contenido o el modo de inserción no están inequívocamente definidos.
+
+30. STD-LOG-07 — Recodes y variables derivadas separadas
+
+Criterio. Una variable derivada representa un dato distinto de su variable fuente y debe conservar identidad propia.
+
+Caso CEX-DIA→DIA02
+
+Cuestionario:
+
+- DIA registra el día;
+- DIA02 es una variable oculta que agrupa lunes–viernes y sábado–domingo.
+
+MDD:
+
+- DIA02 existe como categórica [1..1] independiente.
+
+Lógica:
+
+- en onNext de DIA se asigna _1 o _2 a DIA02;
+- DIA02 se pone en readOnly(true).
+
+Por qué: el recode no modifica el dato original; crea una clasificación derivada trazable.
+
+Caso CEX-D5
+
+D5 produce variables auxiliares de cuota según agrupaciones de estrato. La lógica de onNext realiza las asignaciones después de capturar la respuesta.
+
+Patrón reutilizable: captura original y derivación son variables distintas cuando ambas tienen valor analítico u operativo.
+
+31. STD-LOG-08 — Validación simple vs validación cruzada
+
+Validación simple
+
+Se refiere al propio campo:
+
+- rango numérico;
+- longitud;
+- rango de fecha;
+- cardinalidad.
+
+Debe preferirse la declaración MDD cuando el modelo la soporta.
+
+Validación cruzada
+
+Compara varias respuestas, múltiples iteraciones o estado contextual.
+
+Se implementa mediante función/evento.
+
+Caso BHT-SOW — Sumatoria 100
+
+El cuestionario establece:
+
+- cada valor entre 1 y 100;
+- trasladar determinadas marcas;
+- no continuar si la suma no alcanza 100;
+- mostrar el valor acumulado.
+
+MDD:
+
+- SOW es un loop sobre marcas;
+- Rp es long [1 .. 100];
+- _Osm_CustomFunction = "ValSOW";
+- el label del campo incluye la suma dinámica.
+
+Lógica:
+
+- ValSOW recorre las iteraciones visibles y valida la suma;
+- onBeforeNavigateTo filtra las marcas elegibles;
+- onInputChange recalcula el total mostrado.
+
+Lección: el rango individual pertenece al MDD; la suma entre filas pertenece a la lógica.
+
+32. STD-LOG-09 — Validación de rango + coherencia con otra variable
+
+Caso INN-FN — Fecha de nacimiento y edad
+
+El cuestionario especifica un rango de fecha y una relación con la edad informada.
+
+MDD:
+
+- declara el tipo fecha y su rango;
+- asocia una función mediante _Osm_CustomFunction.
+
+Lógica:
+
+- calcula edad a partir de la fecha;
+- compara con la variable de edad;
+- devuelve estado/mensaje de validación;
+- puede controlar el routing posterior si la incoherencia incumple el filtro.
+
+Patrón:
+
+> restricción intrínseca → MDD; coherencia entre variables → función/lógica.
+
+33. STD-LOG-10 — Routing y terminación después de conservar el estado necesario
+
+Cuando una respuesta produce terminación o salto:
+
+1. capturar la respuesta;
+2. realizar recodes/flags necesarios;
+3. registrar motivo si corresponde;
+4. ejecutar navegación o terminación.
+
+Razón: la salida no debe impedir que se conserve la información requerida para auditoría o cuota.
+
+En los estudios INN y CEX aparecen múltiples patrones de onNext que asignan motivo/variable y luego ejecutan navegación al cierre o terminación.
+
+Parte VII — Backcheck, grabación e infraestructura
+
+34. STD-OPS-01 — BACKCHECK como requerimiento operativo, no como tipo de dato
+
+Ejemplo de Casos.TXT documenta la correspondencia:
+
+`javascript
+OSM.Survey.S5.addEventListener('onEntrance', function(e){
+    xID = OSM.Survey.SHELL_CHAINID.getComment();
+    OSM.Survey.startSilentAudioRecording(xID+"_(S5)");
+});
+
+OSM.Survey.S5.addEventListener('onNext', function(e){
+    OSM.Survey.stopSilentAudioRecording();
+});
+`
+
+El patrón también está corroborado en la lógica OBV para P1 y otras preguntas.
+
+Interpretación
+
+- onEntrance inicia la captura operativa al entrar a la pregunta;
+- onNext la detiene cuando se abandona la pregunta;
+- SHELL_CHAINID participa en el identificador del archivo/caso.
+
+Excepción importante
+
+No debe suponerse que toda marca “BACKCHECK” de cualquier proyecto significa necesariamente grabación silenciosa. Solo se promueve a esta implementación cuando la convención del proyecto o la lógica del estudio lo confirma.
+
+35. STD-OPS-02 — Separar Shell de contenido analítico
+
+Variables como estado de caso, identificación de cadena, controles de grabación, quality flags, GPS, timestamps o datos de servidor deben mantenerse conceptualmente separadas de preguntas sustantivas.
+
+Utilidad:
+
+- evita confundir variables de plataforma con variables analíticas;
+- facilita migración y mantenimiento;
+- permite analizar el cuestionario aun cuando la Shell cambie de versión.
+
+Parte VIII — Casos de referencia derivados de Ejemplo de Casos.TXT
+
+36. CASE-EJ-01 — Máximo tres respuestas
+
+Indicación: “MÁX. 3 RESPUESTAS”.  
+Criterio: cardinalidad declarativa.  
+MDD: categorical [1..3].  
+Lógica: no necesaria únicamente para hacer cumplir el máximo.  
+Reutilización: preguntas RM con límite máximo explícito.  
+Excepción: no usar [0..3] salvo evidencia de que la pregunta es opcional.
+
+37. CASE-EJ-02 — BACKCHECK
+
+Indicación: BACKCHECK.  
+Referente: eventos de entrada/salida con grabación silenciosa.  
+Capa principal: operación OSM.  
+Reutilización: solo cuando la convención del estudio confirma esta equivalencia.  
+Riesgo: convertir una etiqueta operativa en regla universal sin corroboración.
+
+38. CASE-EJ-03 — “MOSTRAR TARJETA” como instrucción asociada
+
+Indicación: “MOSTRAR TARJETA …”.  
+Referente: _Osm_HiddenComment.  
+Uso: instrucción del entrevistador asociada a una pregunta.  
+No implica: que la tarjeta, por sí sola, requiera lógica de navegación.
+
+39. CASE-EJ-04 — M5: loop aleatorio + escala común + expand grid
+
+Situación: tres poblaciones evaluadas con la misma escala.  
+MDD: loop + ran fields + Rp categorical [1..1] + fix exclusive para NP + expand grid.  
+Razón: la entidad cambia por fila, pero la pregunta y la escala son comunes.  
+Reutilización: matrices de atributos con RU por fila y aleatorización de filas.
+
+40. CASE-EJ-05 — P1–P4: baterías sucesivas condicionadas por una batería previa
+
+Situación: P2–P4 solo se aplican a empresas con códigos 2–5 en P1.  
+MDD: cada pregunta conserva su propio loop y escala.  
+Lógica: P1 produce el conjunto de empresas elegibles y filtra las iteraciones posteriores.  
+Razón: la estructura de datos de P2–P4 existe independientemente del subconjunto mostrado en un caso particular.  
+Reutilización: brand funnels, reputación, conocimiento→evaluación, awareness→consideración.
+
+41. CASE-EJ-06 — P5: loops anidados
+
+Situación: evaluar múltiples drivers dentro de múltiples empresas.  
+MDD: loop exterior de empresas + loop interior de atributos/drivers + field de respuesta.  
+Razón: conservar dos dimensiones repetitivas distintas.  
+Reutilización: producto × atributo, marca × dimensión, concepto × criterio.  
+Riesgo: aplanar la estructura y perder la relación padre–hijo.
+
+42. CASE-EJ-07 — P18: ranking modelado como iteraciones
+
+Situación: registrar primera, segunda y tercera mención.  
+MDD: loop de posiciones/menciones, _Osm_DisplayMode = 3, field RU por iteración.  
+Interpretación: cada posición es una captura individual dentro de una secuencia.  
+Atención: si el cuestionario prohíbe repetir la misma alternativa entre posiciones, esa unicidad cruzada necesita validación adicional; la RU de cada fila no basta.
+
+43. CASE-EJ-08 — I2→I3: aplicabilidad y continuidad por iniciativa
+
+Situación: I2 pregunta conocimiento de múltiples iniciativas; I3 pregunta quién la ejecutó solo cuando la iniciativa aplica.  
+MDD: dos loops sobre un universo equivalente, cada uno con su escala.  
+Lógica conceptual: I3 debe mostrarse/filtrarse según los resultados por iteración de I2.  
+Reutilización: conocimiento→detalle, uso→satisfacción, selección→evaluación.
+
+Observación de evidencia: en el archivo lógico revisado aparece una condición general de visibilidad de I3; para cualquier reutilización que exija filtrado por fila, la implementación debe verificarse contra el estudio específico y no suponerse solo por la estructura del referente.
+
+44. CASE-EJ-09 — Inconsistencia local como control de calidad
+
+En Ejemplo de Casos.TXT existe al menos una sección donde el texto de una pregunta identificada como S1 no mantiene correspondencia semántica clara con el fragmento MDD que le sigue.
+
+No debe corregirse por intuición ni convertirse en patrón.
+
+Este caso establece una regla metodológica:
+
+> Un archivo de ejemplos sirve como referente de patrones, pero una correspondencia concreta debe verificarse por ID, wording, categorías y relación funcional antes de reutilizarla.
+
+Parte IX — Casos tripartitos adicionales para fortalecer los estándares
+
+45. CASE-INN-S11 — RM aleatoria + residual exclusivo + terminación + carry-forward
+
+Cuestionario: S11 presenta un conjunto de productos, exige selección múltiple y contiene reglas de continuidad/terminación.  
+MDD: pregunta categórica múltiple, rotación/aleatorización y opción residual fija/exclusiva según el estudio.  
+Lógica: onNext evalúa códigos de filtro y prepara las iteraciones de la pregunta posterior.
+
+Estándares asociados: STD-MDD-01, STD-MDD-03, STD-LOG-03, STD-LOG-04 y STD-LOG-10.
+
+Lección: una sola pregunta puede combinar una estructura declarativa estable con varias consecuencias dinámicas; deben mantenerse separadas.
+
+46. CASE-INN-F21/F22 — Carry-forward de selección a loop de frecuencia
+
+Cuestionario: F21 = RM de formas de consumo; F22 = preguntar una por una solo las formas mencionadas.  
+MDD: F22 es loop y cada iteración tiene RU de frecuencia.  
+Lógica: filterIterations(F21.getAnswers()) antes de mostrar F22.  
+Presentación: _Osm_DisplayMode = 3.
+
+Lección: el término global “matriz” o incluso “GRID MA” no determina la cardinalidad interna. En F22, cada fila es RU aunque el conjunto visible contenga múltiples filas.
+
+47. CASE-CEX-D5 — Aplicabilidad + filtro de respuestas + texto dinámico + recode de cuota
+
+Cuestionario: D5 cambia por segmento/zona y alimenta agrupaciones de cuota.  
+MDD: categórica RU con universo 1–7.  
+Lógica previa: muestra/oculta la pregunta, restablece respuestas, oculta categorías no aplicables e inserta instrucciones.  
+Lógica posterior: recodifica la respuesta en variables auxiliares de cuota.
+
+Estándar compuesto:
+
+> una pregunta puede conservar un universo MDD completo y aplicar en ejecución un subconjunto contextual sin duplicar variables por escenario.
+
+48. CASE-CEX-PECON4 — Exactamente tres + categorías dependientes de segmento
+
+Cuestionario: “seleccione solo tres”; algunas categorías solo aplican a hogares y otras a empresas.  
+MDD: categorical [3..3].  
+Lógica: cambia el wording de una categoría y muestra/oculta subconjuntos de respuestas según D10.  
+Lección: cardinalidad y aplicabilidad son dimensiones distintas y deben implementarse en capas distintas.
+
+49. CASE-CEX-P32 — Escala 1–10 dentro de loop + aplicabilidad
+
+Cuestionario: satisfacción 1–10 sobre atributo(s), solo si la condición previa aplica.  
+MDD: loop + field categorical [1..1], estilo DropList y propiedades de presentación.  
+Lógica: onBeforeNavigateTo decide mostrar u ocultar P32 según P31.
+
+Lección: la escala y su cardinalidad son declarativas; la aplicabilidad pertenece al comportamiento.
+
+50. CASE-CEX-DIA/DIA02 — Variable original + recode oculto
+
+Cuestionario: DIA registra día; DIA02 agrupa semana/fin de semana.  
+MDD: ambas variables existen con identidad propia.  
+Lógica: DIA alimenta DIA02 y la deja de solo lectura.  
+Lección: no sobrescribir la variable fuente para ahorrar estructura; preservar derivación explícita.
+
+51. CASE-BHT-SOW — Loop numérico con suma transversal
+
+Cuestionario: porcentajes por medio de cobro deben sumar 100.  
+MDD: loop sobre marcas + long [1..100] + función custom + insert de suma.  
+Lógica: filtra iteraciones elegibles, suma valores visibles y valida total.  
+Lección: una regla puede repartirse correctamente entre MDD y lógica sin duplicación.
+
+Nota sobre evidencia consolidada
+
+Una versión previa de la base técnica registraba casos funcionales donde no se había localizado correspondencia MDD. En el corpus completo actualmente disponible sí existe para este SOW una relación verificable entre cuestionario, MDD y lógica. Esto demuestra que el estado de evidencia debe actualizarse cuando se incorporan archivos adicionales, sin convertir una ausencia previa en regla permanente.
+
+Parte X — Estructuras anidadas y relaciones complejas
+
+52. STD-CPLX-01 — Elegir la dimensión correcta de repetición
+
+Antes de construir un loop, formular:
+
+1. ¿qué entidad se repite?;
+2. ¿qué pregunta es común a todas las entidades?;
+3. ¿qué escala es compartida?;
+4. ¿hay una segunda dimensión repetitiva?;
+5. ¿la aplicabilidad afecta al nodo completo o solo a algunas iteraciones?
+
+Resultado esperado
+
+- una dimensión repetitiva → loop simple;
+- dos dimensiones repetitivas → loops anidados si la jerarquía lo exige;
+- preguntas heterogéneas conjuntas → block;
+- categorías dependientes → filtro de answers;
+- filas dependientes → filtro de iteraciones.
+
+53. STD-CPLX-02 — No confundir fila, atributo, subpregunta y categoría
+
+| Concepto | Representa | Ejemplo |
+
+| Atributo | Entidad repetida por el loop | “Mina Las Bambas”. |
+| Field/Subpregunta | Dato capturado por cada iteración | Rp de conocimiento. |
+| Categoría | Respuesta posible del field | “La conoce algo”. |
+| Fila visible | Manifestación de una iteración | empresa + control de respuesta. |
+
+Riesgo común: tratar cada fila como una pregunta distinta y perder el patrón común.
+
+54. STD-CPLX-03 — Condiciones a diferentes niveles
+
+Una condición puede actuar sobre:
+
+- el block;
+- el loop completo;
+- una iteración específica;
+- el field dentro de la iteración;
+- una categoría del field;
+- la navegación posterior.
+
+Estándar: ubicar la lógica en el nivel mínimo que satisface el requisito sin alterar elementos no afectados.
+
+Parte XI — Patrones de construcción reutilizables
+
+55. PAT-01 — Pregunta RU simple
+
+Señales: RU, única, seleccionar una.  
+MDD: categorical [1..1].  
+Lógica: solo si hay aplicabilidad, recode, terminación u otra dependencia.
+
+56. PAT-02 — Pregunta RM con máximo
+
+Señales: RM + máximo N.  
+MDD: categorical [1..N] cuando es obligatoria; [0..N] solo si hay evidencia de opcionalidad.  
+Lógica: no duplicar el máximo salvo comportamiento especial.
+
+57. PAT-03 — Selección exacta
+
+Señales: “exactamente N”, “seleccione solo N” con significado inequívoco de cantidad exacta.  
+MDD: categorical [N..N].  
+Caso: CEX-PECON4 [3..3].
+
+58. PAT-04 — Matriz RU por fila
+
+Señales: varias entidades × una escala común; una respuesta por entidad.  
+MDD: loop + fields + Rp categorical [1..1] + grid/expand grid según presentación.  
+Casos: M5, P1–P4, I2, P32.
+
+59. PAT-05 — Matriz con filas aleatorias
+
+Señales: “ALEATORIO”, “ROTAR FILAS/EMPRESAS/ATRIBUTOS”.  
+MDD: ran fields cuando la aleatorización corresponde al universo del loop.  
+Caso: M5 y P1–P4.
+
+60. PAT-06 — RM seguida de evaluación solo de seleccionados
+
+Señales: “mostrar solo mencionados”, “preguntar por cada seleccionado”, “insertar respuestas de X”.  
+MDD: fuente RM + loop destino con universo completo.  
+Lógica: filterIterations(source.getAnswers()) antes de mostrar destino.  
+Caso: INN-F21→F22.
+
+61. PAT-07 — Batería previa define elegibilidad por fila
+
+Señales: “solo códigos X–Y de la pregunta previa” para cada marca/entidad.  
+MDD: loops paralelos con universo común.  
+Lógica: construir lista de iteraciones elegibles a partir de respuestas por fila y filtrar loops posteriores.  
+Caso: OBV-P1→P2/P3/P4/P5.
+
+62. PAT-08 — Recode derivado
+
+Señales: “RECODE FROM”, “crear variable”, cuota agrupada, clasificación.  
+MDD: variable derivada declarada con su dominio.  
+Lógica: asignar en evento posterior a la fuente y mantener fuente intacta.  
+Casos: DIA→DIA02, D5→variables de cuota.
+
+63. PAT-09 — Suma o coherencia entre iteraciones
+
+Señales: “debe sumar 100”, “atributos más/menos deben ser distintos”, “no repetir marca”, “coherente con”.  
+MDD: declarar tipos/rangos/cardinalidades locales.  
+Lógica: validación transversal mediante función/evento.  
+Caso: BHT-SOW; funciones de validación en lógica BHT.
+
+64. PAT-10 — Pregunta con instrucción “mostrar tarjeta”
+
+Señal: acción para encuestador asociada al nodo.  
+MDD/OSM: _Osm_HiddenComment cuando la instrucción está separada y corresponde inequívocamente a esa pregunta.  
+No implica: filtro, recode o cambio de datos.
+
+65. PAT-11 — Ranking por posiciones
+
+Señal: primera/segunda/tercera mención o prioridad.  
+MDD posible corroborado: loop de posiciones + RU por posición, con modo de presentación adecuado.  
+Lógica adicional: si no se permiten duplicados, validar unicidad entre iteraciones.  
+Caso: P18.
+
+66. PAT-12 — Dos dimensiones repetitivas
+
+Señal: por cada A, evaluar varios B con la misma o distintas respuestas.  
+MDD: nested loops cuando A y B son dimensiones reales.  
+Caso: P5.
+
+Parte XII — Antipatrones y errores de interpretación
+
+67. AP-01 — Duplicar en lógica una regla que ya está en MDD
+
+Ejemplo incorrecto: programar manualmente “máximo tres” cuando [1..3] ya lo resuelve y no existe ninguna condición adicional.
+
+Problema: dos fuentes de verdad pueden divergir.
+
+68. AP-02 — Convertir toda tabla en grid
+
+Una tabla del documento puede ser solo maquetación. Solo corresponde grid/loop si existe repetición funcional.
+
+69. AP-03 — Convertir toda fila en pregunta independiente
+
+Si las filas comparten pregunta y escala, lo normal es un loop con un field común.
+
+70. AP-04 — Interpretar “GRID MA” como RM por fila
+
+El descriptor global puede referirse al formato de matriz, no a la cardinalidad de cada field.
+
+Caso INN-F22: el conjunto contiene múltiples filas, pero cada fila es categorical [1..1].
+
+71. AP-05 — Generalizar códigos especiales
+
+No asignar automáticamente semántica a 94, 96, 98 o 99. Debe leerse la etiqueta y la instrucción específica.
+
+72. AP-06 — Usar _Osm_HiddenComment para guardar reglas de flujo
+
+Una indicación operativa para el entrevistador puede ir en _Osm_HiddenComment; una regla de “solo si…”, routing o filtro debe implementarse donde corresponda.
+
+73. AP-07 — Filtrar sin restablecer estado
+
+Aplicar repetidamente hideAnswers sin reconstruir el dominio puede dejar categorías ocultas de una visita anterior.
+
+Patrón seguro: reset → filtro actual.
+
+74. AP-08 — Sobrescribir la fuente con el recode
+
+El dato original debe preservarse cuando la variable derivada tiene semántica distinta.
+
+75. AP-09 — Copiar propiedades OSM por similitud visual
+
+No copiar _Osm_QuestionLayoutID, _Osm_ContentRuleID, _Osm_AllowWatermarks u otras propiedades solo porque otra pregunta “se ve parecida”.
+
+76. AP-10 — Convertir un ejemplo inconsistente en estándar
+
+Un referente debe ser corroborado. El desalineamiento local detectado en S1 de Ejemplo de Casos.TXT se trata como alerta de calidad, no como regla.
+
+Parte XIII — Matriz de relación entre criterio y casos
+
+77. Matriz principal
+
+| Estándar / patrón | Ejemplo de Casos.TXT | Caso corroborante adicional | Nivel de evidencia |
+
+| Máximo N → cardinalidad | Máx. 3 → [1..3] | múltiples preguntas del corpus | A/B |
+| BACKCHECK operativo | S5 grabación entrada/salida | OBV P1 y otras preguntas | A |
+| Mostrar tarjeta | _Osm_HiddenComment | P32 y múltiples MDD | A/B |
+| Loop + escala común | M5 | P1–P4, I2, P32 | A |
+| ran fields | M5, P1–P4 | matrices OBV | A/B |
+| expand grid | M5, P1–P4, I2/I3 | otras matrices del corpus | B |
+| Filtro entre baterías | P1→P2/P3/P4 | lógica OBV P1→P2/P3/P4/P5 | A |
+| Loops anidados | P5 | patrones INN/OBV complejos | A/B |
+| Ranking por iteraciones | P18 | — | B; lógica extra según restricciones |
+| Carry-forward a filas | I2→I3 como concepto | INN F21→F22 | A para F21→F22 |
+| Exactamente N | — | CEX PECON4 | A |
+| Filtro de categorías | — | CEX D5 / PECON4 | A |
+| Recode derivado | — | CEX DIA→DIA02 / D5 cuota | A |
+| Validación transversal | — | BHT SOW | A |
+| Estado/reset antes de filtro | — | CEX D5, INN S11a | A |
+
+Parte XIV — Trazabilidad de casos y evidencia de archivo
+
+78. Referencias concretas del corpus
+
+Las siguientes referencias permiten volver desde el criterio conceptual hacia la evidencia original:
+
+| Caso | Cuestionario | MDD | Lógica |
+
+| BHT SOW | BHT_MSU_CRE_01_CUESTIONARIO_UNIDO.md, aprox. líneas 169–176 | BHT_MSU_CRE_03_MDD_UNIDO.txt, aprox. 2751–2764 | BHT_MSU_CRE_02_LOGICA_UNIDA.txt, función ValSOW desde aprox. línea 88; eventos SOW alrededor de 1058–1085 |
+| INN F21→F22 | INN_01_CUESTIONARIO_UNIDO.md, aprox. 12966–12981 | INN_03_MDD_UNIDO.txt, F21/F22 alrededor de 75762–75840 | INN_02_LOGICA_UNIDA.txt, F22 onBeforeNavigateTo alrededor de 30850–30857 |
+| CEX D5 | CEX_01_CUESTIONARIO_UNIDO.md, aprox. 368–388 | CEX_03_MDD_UNIDO.txt, aprox. 5608 en adelante | CEX_02_LOGICA_UNIDA.txt, D5 onNext y onBeforeNavigateTo alrededor de 1492–1528 |
+| CEX P32 | CEX_01_CUESTIONARIO_UNIDO.md, aprox. 628–642 | CEX_03_MDD_UNIDO.txt, aprox. 7127–7158 | CEX_02_LOGICA_UNIDA.txt, aprox. 2292–2298 |
+| CEX PECON4 | CEX_01_CUESTIONARIO_UNIDO.md, aprox. 1049–1064 | CEX_03_MDD_UNIDO.txt, aprox. 8356 en adelante | CEX_02_LOGICA_UNIDA.txt, aprox. 2096 en adelante |
+| CEX DIA→DIA02 | CEX_01_CUESTIONARIO_UNIDO.md, aprox. 1192–1208 | CEX_03_MDD_UNIDO.txt, DIA02 aprox. 11017–11028 | CEX_02_LOGICA_UNIDA.txt, DIA onNext aprox. 2930–2938 |
+| OBV P1→P2/P3/P4/P5 | OBV_PA_TRENDS_CPR_01_CUESTIONARIO_UNIDO.md, sección Pirámide de Reputación | OBV_PA_TRENDS_CPR_03_MDD_UNIDO.txt, loops P1 en adelante | OBV_PA_TRENDS_CPR_02_LOGICA_UNIDA.txt, P1 onEntrance/onNext aprox. 507 en adelante |
+| OBV I2/I3 | OBV_PA_TRENDS_CPR_01_CUESTIONARIO_UNIDO.md, bloque I2/I3 | OBV_PA_TRENDS_CPR_03_MDD_UNIDO.txt, loops I2/I3 | OBV_PA_TRENDS_CPR_02_LOGICA_UNIDA.txt, condición I3 alrededor de 10311–10317 |
+| Casos de referencia | Ejemplo de Casos.txt | mismo archivo contiene fragmentos MDD | mismo archivo contiene referentes de lógica |
+
+Nota: las líneas son puntos de localización del corpus consolidado y pueden variar si los archivos son regenerados o reordenados.
+
+Parte XV — Árbol de decisión para analizar un nuevo estudio
+
+79. Paso 1 — Identificar el nodo funcional
+
+Preguntar:
+
+- ¿es texto informativo?
+- ¿es pregunta?
+- ¿es categoría?
+- ¿es atributo repetido?
+- ¿es subpregunta/campo?
+- ¿es instrucción para entrevistador?
+- ¿es instrucción de programación?
+
+No decidir por la forma visual solamente.
+
+80. Paso 2 — Determinar el contrato estable del dato
+
+Definir:
+
+- ID;
+- tipo;
+- cardinalidad;
+- categorías;
+- códigos;
+- campos asociados;
+- rango/longitud si existe evidencia;
+- listas reutilizables;
+- dimensión de repetición.
+
+Todo esto debe resolverse antes de diseñar lógica dinámica.
+
+81. Paso 3 — Detectar repetición
+
+Si se repite una misma captura por entidad
+
+Usar loop.
+
+Si las filas comparten escala
+
+Un field común por iteración.
+
+Si hay dos dimensiones de repetición
+
+Evaluar nested loops.
+
+Si se agrupan controles distintos
+
+Evaluar block, pero solo con evidencia de agrupación funcional.
+
+82. Paso 4 — Determinar presentación de matriz
+
+Preguntar:
+
+- ¿debe verse como grid completo?
+- ¿debe recorrerse atributo por atributo?
+- ¿hay más de una subpregunta por atributo?
+- ¿el proyecto usa expand grid para ese patrón?
+- ¿se debe ocultar texto repetido mediante propiedades OSM?
+
+No confundir presentación con semántica de datos.
+
+83. Paso 5 — Identificar dependencias
+
+Clasificar cada dependencia como:
+
+- pregunta completa;
+- categorías;
+- iteraciones;
+- texto dinámico;
+- recode;
+- validación;
+- routing/terminación;
+- operación de campo.
+
+Esto determina qué objeto y qué evento deben usarse.
+
+84. Paso 6 — Elegir el momento de ejecución
+
+- antes de mostrar → onBeforeNavigateTo;
+- al entrar → onEntrance;
+- durante la respuesta → onInputChange;
+- al continuar → onNext;
+- validación específica del campo → función custom si está respaldada por el patrón del proyecto.
+
+85. Paso 7 — Verificar estado y reversibilidad
+
+Para todo filtro dinámico preguntarse:
+
+- ¿qué ocurre si el entrevistador vuelve atrás?
+- ¿qué ocurre si cambia la respuesta fuente?
+- ¿debo resetear respuestas o iteraciones visibles?
+- ¿quedan valores capturados en elementos ahora ocultos?
+
+Este control es indispensable en show/hide, filtros y carry-forward.
+
+86. Paso 8 — Validar trazabilidad
+
+Para cada elemento construido debe poder responderse:
+
+- ¿qué texto o indicación lo origina?;
+- ¿qué nodo MDD lo representa?;
+- ¿qué lógica adicional lo modifica?;
+- ¿qué evidencia demuestra esa correspondencia?;
+- ¿es estándar reutilizable o decisión local?
+
+Parte XVI — Checklist técnico para nuevos estudios
+
+87. Cuestionario
+
+- [ ] Se conservaron IDs visibles y códigos asociados.
+- [ ] Se distinguieron preguntas, atributos, categorías e instrucciones.
+- [ ] Se conservaron RU/RM, mínimos, máximos y exact-N explícitos.
+- [ ] Se identificaron indicaciones de entrevistador y de programación por separado.
+- [ ] Se identificaron condiciones “solo si”, saltos, terminaciones, cuotas y recodes.
+- [ ] Se identificaron rotaciones y aleatorizaciones indicando qué universo afectan.
+- [ ] Se identificaron carry-forward y piping.
+- [ ] Se identificaron validaciones locales y cruzadas.
+
+88. MDD
+
+- [ ] El tipo corresponde al modo real de captura.
+- [ ] La cardinalidad expresa la restricción estable sin duplicarla innecesariamente.
+- [ ] Todas las categorías capturables tienen el código/value correspondiente cuando aplica al patrón del estudio.
+- [ ] Los campos “other specify” solo existen cuando hay evidencia.
+- [ ] Los fix/exclusive están respaldados por semántica o instrucción.
+- [ ] Los loops representan entidades repetitivas reales.
+- [ ] Los fields representan correctamente la captura por iteración.
+- [ ] Grid/expand grid se usa por presentación, sin alterar cardinalidad.
+- [ ] ran fields se usa solo cuando se aleatorizan filas/atributos.
+- [ ] Los nested loops corresponden a dimensiones repetitivas diferentes.
+- [ ] Los blocks tienen razón funcional de agrupación.
+- [ ] Las listas define/use solo agrupan catálogos realmente reutilizados.
+- [ ] Las propiedades _Osm_* están justificadas por el caso o la plantilla corroborada.
+
+89. Lógica OSM
+
+- [ ] show/hide actúa en el nivel correcto.
+- [ ] Los filtros de respuestas y de iteraciones no se confunden.
+- [ ] El estado se restablece antes de aplicar filtros dependientes del contexto cuando existe reentrada.
+- [ ] Los recodes mantienen variable fuente y variable derivada separadas cuando corresponde.
+- [ ] Las validaciones cruzadas no se intentan expresar únicamente con cardinalidad.
+- [ ] El evento elegido coincide con el momento funcional.
+- [ ] Routing/terminación ocurre después de guardar recodes/motivos necesarios.
+- [ ] BACKCHECK y otros controles Shell están separados de la lógica analítica.
+
+90. Evidencia
+
+- [ ] Cada criterio importante tiene al menos una fuente identificable.
+- [ ] Los casos del archivo de ejemplos se corroboraron antes de generalizarlos.
+- [ ] Las ausencias de implementación no se rellenaron por intuición.
+- [ ] Las inconsistencias se registraron como excepciones o alertas.
+- [ ] Los valores de propiedades OSM dependientes de plantilla no se dedujeron por su número.
+
+Parte XVII — Ficha estándar para documentar nuevos casos
+
+91. Plantilla reusable
+
+ID del caso
+
+CASE--
+
+Indicación funcional
+
+Texto o síntesis fiel de la regla del cuestionario.
+
+Situación de uso
+
+Qué problema resuelve y bajo qué condiciones aplica.
+
+Estructura MDD
+
+- tipo;
+- cardinalidad;
+- categorías;
+- loop/block/lista;
+- fields;
+- grid/modo de presentación;
+- propiedades OSM relevantes.
+
+Lógica de ejecución
+
+- dependencia fuente;
+- objeto afectado;
+- evento;
+- operación (show, hide, filtro, recode, validación, navegación, etc.).
+
+Razón técnica
+
+Por qué se distribuye la solución de esa manera entre MDD y lógica.
+
+Trazabilidad
+
+Cuestionario → MDD → Lógica → efecto
+
+Patrón reutilizable
+
+Qué parte puede reutilizarse en otros estudios.
+
+Excepciones
+
+Qué condiciones impedirían reutilizarlo directamente.
+
+Evidencia
+
+Archivos y localización del caso.
+
+Nivel de evidencia
+
+A, B, C o D según la matriz de corroboración de esta base.
+
+Parte XVIII — Diccionario conceptual mínimo
+
+92. Cuestionario
+
+Especificación funcional del instrumento. Puede contener wording, respuestas, códigos, instrucciones, filtros, notas y reglas operativas.
+
+93. MDD
+
+Modelo declarativo del dato y de la estructura del cuestionario: tipos, categorías, cardinalidades, loops, fields, listas, blocks y metadatos OSM.
+
+94. iField/OSM
+
+Entorno de ejecución en el que el modelo MDD se presenta y la lógica opera sobre el estado de la entrevista.
+
+95. OSM.Survey
+
+Interfaz de ejecución observada para acceder a nodos del instrumento, respuestas, loops, navegación, inserts y servicios operativos.
+
+96. Loop
+
+Estructura que repite un conjunto de fields por cada atributo/entidad del universo de iteración.
+
+97. Field
+
+Dato capturado dentro de una iteración. Rp es un nombre recurrente para el campo de respuesta en los casos revisados.
+
+98. Grid
+
+Presentación matricial de un loop y sus fields.
+
+99. expand grid
+
+Variante de presentación matricial observada en el corpus; no modifica por sí misma la semántica del dato interno.
+
+100. ran fields
+
+Aleatorización del orden de los atributos/iteraciones de un loop.
+
+101. Block
+
+Agrupación funcional de nodos distintos; no representa repetición.
+
+102. Carry-forward
+
+Uso de respuestas previas para definir contenido, alternativas o iteraciones de una pregunta posterior.
+
+103. Piping
+
+Inserción de texto o contenido procedente de otra variable o del atributo actual dentro del wording presentado.
+
+104. Recode
+
+Variable derivada que transforma o agrupa una respuesta fuente sin reemplazarla conceptualmente.
+
+105. Filtro de respuestas
+
+Restricción dinámica del conjunto de categorías disponibles en una pregunta.
+
+106. Filtro de iteraciones
+
+Restricción dinámica del conjunto de atributos/filas ejecutados dentro de un loop.
+
+107. BACKCHECK
+
+Marca operativa que, en los casos corroborados, puede activar mecanismos como grabación de la interacción; su implementación debe confirmarse por proyecto.
+
+Parte XIX — Reglas maestras
+
+108. Regla maestra 1 — Declarar primero, programar después
+
+Si una regla pertenece al contrato estable del dato y MDD puede expresarla claramente, debe preferirse la construcción declarativa.
+
+109. Regla maestra 2 — La lógica resuelve contexto, no reemplaza estructura
+
+Usar comportamiento para dependencias entre variables, visibilidad, filtros, recodes, navegación y validaciones cruzadas.
+
+110. Regla maestra 3 — La cardinalidad pertenece al field que captura
+
+En loops y grids, el número de filas no determina cuántas respuestas admite cada fila.
+
+111. Regla maestra 4 — Filtrar el nivel correcto
+
+- pregunta → show/hide;
+- categorías → answers;
+- filas → iterations;
+- texto → inserts/piping;
+- derivación → variable separada;
+- salida → routing/terminación.
+
+112. Regla maestra 5 — Resetear antes de refiltrar cuando el estado puede cambiar
+
+Una entrevista navegable debe ser robusta ante retroceso, edición y reentrada.
+
+113. Regla maestra 6 — No confundir presentación con datos
+
+DropList, grid, expand grid, _Osm_DisplayMode, textos ocultos o watermarks afectan la experiencia o integración, pero no redefinen automáticamente la semántica de respuesta.
+
+114. Regla maestra 7 — No convertir convenciones locales en universales
+
+Códigos especiales, IDs de layout, reglas de contenido, BACKCHECK, colores o propiedades OSM pueden depender del proyecto o plantilla.
+
+115. Regla maestra 8 — La evidencia manda sobre la analogía
+
+Una solución parecida en otro estudio es referencia, no prueba. Antes de reutilizarla debe verificarse:
+
+- misma función;
+- misma granularidad;
+- misma cardinalidad;
+- mismo nivel de condición;
+- misma relación entre nodos;
+- misma convención de plataforma cuando corresponda.
+
+116. Regla maestra 9 — Preservar fuente y derivación
+
+Las variables derivadas, cuotas y clasificaciones deben poder rastrearse hasta la respuesta original.
+
+117. Regla maestra 10 — Toda excepción debe quedar documentada
+
+Una ausencia de correspondencia, contradicción entre archivos o ambigüedad no se resuelve inventando; se registra como excepción y se reduce el nivel de evidencia.
+
+Parte XX — Conclusión operativa
+
+La evidencia combinada establece un modelo consistente para futuros estudios:
+
+1. Interpretar primero el cuestionario como una jerarquía funcional.
+2. Construir en MDD el contrato estable del dato: tipos, cardinalidades, categorías, listas, loops, fields, blocks y metadatos OSM respaldados.
+3. Usar lógica OSM para aquello que depende del estado de la entrevista: aplicabilidad, filtros, carry-forward, recodes, validaciones cruzadas, routing y operación.
+4. Elegir el nivel exacto de intervención: pregunta, categoría, iteración, field o navegación.
+5. Conservar la trazabilidad por ID y por función entre cuestionario, MDD y lógica.
+6. Reutilizar patrones solo después de corroborar sus condiciones.
+7. Tratar los casos documentados como evidencia contextual, no como recetas universales.
+8. Registrar explícitamente excepciones y vacíos de evidencia.
+
+Bajo este enfoque, un nuevo estudio puede analizarse no solo para reproducir su estructura, sino para explicar por qué una solución concreta debe ser una cardinalidad MDD, un loop, un ran fields, un expand grid, un block, un filtro de iteraciones, una propiedad _Osm_*, una validación o una regla de navegación.
+
+Anexo A — Índice rápido “indicación → criterio”
+
+| Indicación o necesidad | Criterio de referencia |
+
+| RU / única | categorical [1..1] |
+| RM | categorical [1..] o rango explícito |
+| Máximo N | cardinalidad hasta N |
+| Exactamente N | [N..N] |
+| “Otro, especificar” | categoría + field asociado si la captura está indicada |
+| “Ninguno / No precisa” | evaluar fix/exclusive según semántica, no por código |
+| Rotar alternativas | orden aleatorio/rotado de categorías según patrón del proyecto |
+| Rotar filas | ran fields cuando el loop es el universo rotado |
+| Misma escala para muchas filas | loop + field común |
+| Mostrar matriz | grid/expand grid según presentación corroborada |
+| Preguntar 1 por 1 | loop con modo de presentación apropiado; _Osm_DisplayMode = 3 está corroborado en casos afines |
+| Mostrar solo seleccionados | filtrar iteraciones si lo seleccionado son filas/entidades |
+| Mostrar solo ciertas alternativas | filtrar answers |
+| Solo si X | show/hide o filtro del nivel correspondiente |
+| Insertar respuesta previa | piping/insert cuando la fuente es inequívoca |
+| Recode | variable derivada + asignación lógica |
+| Suma 100 | rango local en MDD + validación transversal en lógica |
+| BACKCHECK | mecanismo operativo corroborado por proyecto; en casos observados, grabación entrada/salida |
+| Mostrar tarjeta | instrucción de entrevistador; _Osm_HiddenComment cuando corresponde |
+| Dos dimensiones repetidas | nested loops |
+| Mismo screen de preguntas diferentes | block si la agrupación funcional está explícita |
+
+Anexo B — Fuentes consolidadas
+
+- BHT_MSU_CRE_01_CUESTIONARIO_UNIDO.md
+- BHT_MSU_CRE_02_LOGICA_UNIDA.txt
+- BHT_MSU_CRE_03_MDD_UNIDO.txt
+- CEX_01_CUESTIONARIO_UNIDO.md
+- CEX_02_LOGICA_UNIDA.txt
+- CEX_03_MDD_UNIDO.txt
+- INN_01_CUESTIONARIO_UNIDO.md
+- INN_02_LOGICA_UNIDA.txt
+- INN_03_MDD_UNIDO.txt
+- OBV_PA_TRENDS_CPR_01_CUESTIONARIO_UNIDO.md
+- OBV_PA_TRENDS_CPR_02_LOGICA_UNIDA.txt
+- OBV_PA_TRENDS_CPR_03_MDD_UNIDO.txt
+- Analizador Lógico de Cuestionarios (1).docx
+- Base_Conocimiento_Consolidada_Cuestionarios_MDD_iField_OSM.md
+- Base_Conocimiento_Tecnica_Criterios_MDD.md
+- Metatool Ifield V3 1 (1).txt
+- Ejemplo de Casos.txt`
+
+======================================================================
+COMPLEMENTO NORMATIVO DE CONVERSIÓN
+======================================================================
+
+1. FUENTE Y FIDELIDAD
+
+La conversión debe basarse en el documento actual y en sus elementos visibles y estructurales. Deben revisarse texto, tablas, celdas, numeraciones, encabezados, pies de página, imágenes, formas, cuadros de texto, objetos flotantes, texto oculto y elementos con formato especial.
+
+No se deben inventar preguntas, IDs, códigos, alternativas, escalas, límites, validaciones, filtros ni pipe-ins. Los comentarios y el contenido de control de cambios deben identificarse y excluirse de la estructura final.
+
+2. IDENTIFICACIÓN DE IDs
+
+Deben distinguirse:
+
+- ID de pregunta.
+- ID de subpregunta.
+- ID de matriz o batería.
+- ID de ítem.
+- ID de variable.
+- Código de respuesta.
+- Enumeración narrativa.
+- Viñeta o número de página.
+
+Si un ID proviene de numeración automática, debe recuperarse comparando la representación visual con la estructura del documento. Si un elemento realmente no tiene ID, se usará un nombre técnico neutral, por ejemplo PREGUNTA_SIN_ID_1, sin incorporarlo al wording visible.
+
+Normalización técnica:
+
+- P0.1 -> P0_1
+- 1C -> P1C
+- 12C.1 -> P12C_1
+- E.EXACTA -> E_EXACTA
+
+Si dos IDs producen el mismo nombre técnico, se conservan ambos y se agregan sufijos neutrales como _DUP2 o _DUP3.
+
+3. WORDING Y CÓDIGOS
+
+El wording visible y el código de respuesta son elementos diferentes. Un número visible entre paréntesis debe conservarse si forma parte del texto. Un código ubicado únicamente en una columna separada se utilizará para el identificador técnico y value, pero no se agregará al wording.
+
+Ejemplo:
+
+Original:
+Evito salir a cualquier hora, incluso de día (1) | código 1
+
+Resultado conceptual:
+_1 "Evito salir a cualquier hora, incluso de día (1)"
+    [value = 1]
+
+4. INFO E INSTRUCCIONES OPERATIVAS
+
+Los títulos, introducciones, textos de cierre y contenidos visibles que no capturan respuesta se modelan como INFO.
+
+Las instrucciones de entrevistador, como MOSTRAR TARJETA, LEER, NO LEER, RESPUESTA ÚNICA, RESPUESTA MÚLTIPLE, PROFUNDIZAR o GRABAR, deben conservarse en el lugar funcional correcto. Cuando estén separadas o al final de la pregunta, pueden representarse mediante _Osm_HiddenComment.
+
+BACKCHECK no es un tipo de respuesta. Cuando el proyecto confirma su equivalencia con grabación, se implementa operativamente con eventos de entrada y salida.
+
+5. TIPOS Y CARDINALIDADES
+
+- RU: categorical [1..1]
+- RM: categorical [1..]
+- Máximo 3: categorical [1..3]
+- Mínimo 2: categorical [2..]
+- Exactamente 3: categorical [3..3]
+- Texto abierto: text [0..200]
+- Entero: long
+- Decimal: double
+- Fecha: date
+
+El mínimo cero solo debe utilizarse cuando exista evidencia de opcionalidad.
+
+6. RESPUESTAS ESPECIALES Y CAMPOS ASOCIADOS
+
+Opciones como Ninguno, No sabe, No responde, No precisa o No aplica suelen requerir exclusividad, pero su tratamiento debe confirmarse por significado y no únicamente por código.
+
+La categoría Otro solo debe incluir campo asociado cuando el cuestionario exige especificar o presenta una captura abierta inequívoca.
+
+7. ORDEN Y ROTACIÓN
+
+- ROTAR: rot
+- ALEATORIZAR: ran
+- ORDEN A-Z: asc
+- ORDEN Z-A: desc
+- INVERTIR: rev
+
+En categorías se aplica al cierre de la lista. En filas o atributos de un loop se aplica como rot fields, ran fields, asc fields, desc fields o rev fields.
+
+Las respuestas residuales deben quedar fuera del universo rotado cuando el cuestionario así lo determine.
+
+8. LISTAS REUTILIZABLES
+
+Una lista define/use debe crearse cuando el mismo catálogo de respuestas se utiliza más de una vez. Las respuestas residuales específicas de una pregunta no deben incluirse en la lista común si no aplican a todas las reutilizaciones.
+
+9. LOOPS, GRILLAS Y BLOQUES
+
+Loop: repite la misma captura sobre entidades equivalentes.
+Grid o expand grid: presenta matricialmente un loop y sus campos.
+Block: agrupa preguntas diferentes que deben mostrarse o capturarse juntas.
+Nested loops: representan dos dimensiones repetitivas reales.
+
+La cardinalidad pertenece al campo que captura la respuesta dentro del loop, no al número de filas.
+
+10. PIPE-IN Y TEXTO DINÁMICO
+
+- {#VARIABLE#}: inserción desde una variable inequívoca.
+- {@}: atributo actual dentro de un loop.
+
+No se debe crear un pipe-in si la fuente o la modalidad de inserción no están claramente definidas.
+
+11. VALIDACIONES
+
+Las restricciones internas del campo, como rango, longitud o cardinalidad, deben declararse en MDD cuando sea posible. Las validaciones que comparan varias respuestas, iteraciones o variables pertenecen a la lógica.
+
+12. CONTROL DE COBERTURA
+
+Antes de terminar debe verificarse:
+
+- Cobertura de todas las preguntas y alternativas.
+- Conservación de IDs visibles.
+- Correspondencia de códigos y values.
+- Tipos y cardinalidades correctos.
+- Loops y grids correctamente interpretados.
+- Exclusión de comentarios y cambios controlados.
+- Ausencia de lógica inventada.
+- Sintaxis MDD coherente.
+- Trazabilidad entre cuestionario, MDD y lógica.
+
+======================================================================
+CASOS DE EJEMPLO CONSOLIDADOS
+======================================================================
+
+CASO 1. MÁXIMO TRES RESPUESTAS
+
+Indicación:
+MÁX. 3 RESPUESTAS
+
+Criterio:
+La restricción pertenece a la cardinalidad del campo.
+
+Estructura esperada:
+categorical [1..3]
+
+No se necesita lógica adicional únicamente para controlar el máximo.
+
+---------------------------------------------------------------------
+CASO 2. MOSTRAR TARJETA
+
+Indicación:
+MOSTRAR TARJETA S8
+
+Tratamiento:
+_Osm_HiddenComment = "<font color='Cyan'>(MOSTRAR TARJETA S8)</font>"
+
+La indicación informa al entrevistador. Por sí sola no crea filtros ni saltos.
+
+---------------------------------------------------------------------
+CASO 3. BACKCHECK CON GRABACIÓN
+
+Situación:
+El estudio confirma que BACKCHECK activa grabación silenciosa.
+
+Patrón de ejecución:
+
+OSM.Survey.S5.addEventListener('onEntrance', function(e) {
+    var chainId = OSM.Survey.SHELL_CHAINID.getComment();
+    OSM.Survey.startSilentAudioRecording(chainId + '_(S5)');
+});
+
+OSM.Survey.S5.addEventListener('onNext', function(e) {
+    OSM.Survey.stopSilentAudioRecording();
+});
+
+El patrón no debe aplicarse automáticamente en proyectos donde BACKCHECK tenga otra convención.
+
+---------------------------------------------------------------------
+CASO 4. M5, MATRIZ RU POR FILA
+
+Situación:
+Tres poblaciones son evaluadas con la escala Beneficia, Perjudica y NP. Las poblaciones se presentan aleatoriamente.
+
+Estructura:
+
+M5 "M5. Por lo general, ¿la minería formal beneficia o perjudica a (LEER OPCIONES)?"
+loop
+{
+    _1 "La población de la comunidad o distrito donde se desarrolla la mina",
+    _2 "La población de la región donde se desarrolla la mina",
+    _3 "La población del país en general"
+} ran fields -
+(
+    Rp ""
+    categorical [1..1]
+    {
+        _1 "Beneficia" [value = 1],
+        _2 "Perjudica" [value = 2],
+        _99 "NP" [value = 99] fix exclusive
+    };
+) expand grid;
+
+Interpretación:
+El loop contiene las entidades; Rp captura una respuesta por entidad; ran fields aleatoriza las filas.
+
+---------------------------------------------------------------------
+CASO 5. PIRÁMIDE DE REPUTACIÓN P1 A P4
+
+Situación:
+P1 mide conocimiento de empresas. P2, P3 y P4 solo evalúan empresas que obtuvieron códigos 2 a 5 en P1.
+
+Modelo:
+Cada pregunta mantiene su propio loop de empresas y su escala. La lógica construye una lista de empresas elegibles desde P1 y filtra las iteraciones de P2, P3 y P4.
+
+Criterio:
+No basta con mostrar la pregunta completa. También debe filtrarse el conjunto de iteraciones para impedir que aparezcan empresas no elegibles.
+
+---------------------------------------------------------------------
+CASO 6. P5, EMPRESA POR DRIVER
+
+Situación:
+Por cada empresa conocida se evalúan varios atributos o drivers.
+
+Modelo:
+Loop exterior de empresas.
+Loop interior de drivers.
+Campo de respuesta dentro del loop interior.
+
+Dimensiones:
+Empresa -> Driver -> Calificación
+
+Este patrón es adecuado para producto por atributo, marca por dimensión o concepto por criterio.
+
+---------------------------------------------------------------------
+CASO 7. P18, PRIMERA A TERCERA MENCIÓN
+
+Situación:
+Se capturan primera, segunda y tercera mención en pantallas sucesivas.
+
+Modelo:
+Loop de posiciones con _Osm_DisplayMode = 3 y una pregunta RU por posición.
+
+Advertencia:
+Si una alternativa no puede repetirse entre posiciones, la RU individual no es suficiente. Debe agregarse validación transversal o filtrado de respuestas ya seleccionadas.
+
+---------------------------------------------------------------------
+CASO 8. I2 A I3, CONOCIMIENTO Y DETALLE
+
+Situación:
+I2 pregunta si se conoce cada iniciativa. I3 pregunta quién la ejecutó únicamente para las iniciativas conocidas.
+
+Modelo:
+Dos loops con el mismo universo conceptual. La lógica toma las iniciativas con respuesta afirmativa en I2 y filtra las iteraciones de I3.
+
+Patrón reutilizable:
+Conocimiento -> detalle.
+Uso -> satisfacción.
+Selección -> evaluación.
+
+---------------------------------------------------------------------
+CASO 9. F21 A F22, CARRY-FORWARD
+
+Situación:
+F21 registra formas de consumo mediante RM. F22 pregunta frecuencia únicamente para las formas elegidas.
+
+MDD:
+F21 es categorical múltiple.
+F22 es un loop con una respuesta RU de frecuencia por iteración.
+
+Lógica:
+OSM.Survey.F22.addEventListener('onBeforeNavigateTo', function(e) {
+    e.sourceElement.filterIterations(OSM.Survey.F21.getAnswers());
+});
+
+La fuente define el subconjunto activo; el universo completo permanece declarado en el MDD.
+
+---------------------------------------------------------------------
+CASO 10. SUMA DE 100 EN LOOP
+
+Situación:
+Se capturan porcentajes por marca o medio y el total debe ser 100.
+
+Distribución correcta:
+- MDD: campo numérico y rango individual.
+- Lógica: suma entre iteraciones y validación del total.
+- Presentación: actualización del acumulado si el estudio lo requiere.
+
+No debe intentarse resolver una suma transversal únicamente con el rango de cada campo.
+
+---------------------------------------------------------------------
+CASO 11. VARIABLE FUENTE Y RECODE
+
+Situación:
+DIA registra el día y DIA02 agrupa semana frente a fin de semana.
+
+Modelo:
+DIA conserva la captura original.
+DIA02 se declara como variable independiente.
+La lógica asigna la categoría derivada después de capturar DIA.
+
+Nunca debe sobrescribirse la fuente con el recode.
+
+---------------------------------------------------------------------
+CASO 12. ESTUDIOS INN, PRUEBA DE PRODUCTO
+
+Regla específica:
+En estudios tipo INN debe identificarse toda estructura de prueba de producto. Cuando el cuestionario indique productos, órdenes, celdas o secuencias de evaluación, deben conservarse explícitamente las dimensiones de diseño.
+
+Elementos mínimos que deben revisarse:
+
+1. Universo de productos.
+2. Número de productos evaluados por entrevistado.
+3. Orden o rotación de presentación.
+4. Celda experimental o grupo de asignación.
+5. Variables de producto por posición: prod_1, prod_2, prod_3, etc.
+6. Relación entre producto asignado, posición y preguntas evaluativas.
+7. Carry-forward del producto actual hacia el wording.
+8. Filtros de iteraciones para mostrar únicamente los productos asignados.
+9. Reglas de no repetición cuando correspondan.
+10. Persistencia del orden para análisis posterior.
+
+Modelo conceptual:
+
+- CELDA: identifica el diseño o combinación asignada.
+- ROTACION: identifica el orden de exposición.
+- prod_1: producto presentado en la primera posición.
+- prod_2: producto presentado en la segunda posición.
+- prod_n: producto presentado en la posición n.
+- LOOP_PRODUCTO: ejecuta las preguntas de evaluación para cada producto asignado.
+
+Ejemplo conceptual de variables:
+
+CELDA "Celda experimental"
+categorical [1..1]
+{
+    _1 "Celda 1" [value = 1],
+    _2 "Celda 2" [value = 2]
+};
+
+ROTACION "Orden de presentación"
+categorical [1..1]
+{
+    _1 "Orden A-B" [value = 1],
+    _2 "Orden B-A" [value = 2]
+};
+
+prod_1 "Producto en primera posición"
+categorical [1..1]
+{
+    _1 "Producto A" [value = 1],
+    _2 "Producto B" [value = 2]
+};
+
+prod_2 "Producto en segunda posición"
+categorical [1..1]
+{
+    _1 "Producto A" [value = 1],
+    _2 "Producto B" [value = 2]
+};
+
+Criterios de implementación:
+
+- No crear prod_1, prod_2 o CELDA si el estudio no presenta evidencia de diseño de productos.
+- No deducir una rotación únicamente porque existan varios productos.
+- Si la celda y el orden vienen precargados, deben mantenerse como variables técnicas o derivadas según la arquitectura del estudio.
+- Si el producto cambia por iteración, el wording puede usar {@} o un insert inequívoco.
+- Si las preguntas posteriores solo aplican a productos asignados, debe filtrarse el loop y no únicamente ocultarse la pregunta completa.
+- El orden aplicado debe conservarse para que la base final permita distinguir producto evaluado y posición de exposición.
+
+---------------------------------------------------------------------
+CASO 13. CONTROL DE CALIDAD POR INCONSISTENCIA
+
+Si el ID, wording y código MDD no mantienen correspondencia semántica, el fragmento no debe convertirse automáticamente en referente. Debe registrarse como inconsistencia y verificarse contra cuestionario, MDD y lógica originales.
+
+El ejemplo S1 del archivo de casos demuestra que un catálogo de ejemplos puede contener fragmentos desalineados. La similitud de ID no sustituye la validación funcional.
+
+======================================================================
+REGLAS FINALES DE USO
+======================================================================
+
+1. Declarar primero el contrato estable del dato en MDD.
+2. Programar después las dependencias dinámicas en OSM.
+3. Aplicar cada condición en el nivel correcto: pregunta, categoría, iteración, campo o navegación.
+4. Restablecer el estado antes de aplicar filtros que puedan cambiar por retroceso o edición.
+5. Conservar separadas las variables fuente y derivadas.
+6. No confundir presentación con semántica de datos.
+7. No convertir convenciones locales en reglas universales.
+8. No inventar IDs, códigos, límites, pipe-ins ni validaciones.
+9. Corroborar los ejemplos mediante trazabilidad cuando existan archivos de cuestionario, MDD y lógica.
+10. En estudios INN, revisar expresamente prueba de producto, rotación, celda, prod_1, prod_2 y demás posiciones requeridas.
+11. Documentar cualquier excepción, contradicción o ausencia de evidencia.
+12. Mantener la solución más simple que reproduzca fielmente el requerimiento.
+
+FIN DE LA BASE DE CONOCIMIENTO CONSOLIDADA
