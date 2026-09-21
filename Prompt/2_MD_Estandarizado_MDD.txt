@@ -465,8 +465,6 @@ Las siguientes variables históricas se mantienen como catálogo de compatibilid
 
 `INICIO`
 `INFO_INTRO_1`
-`ELIMI`
-`GRACIAS_ELIMI`
 `INFO_LINK`
 `ID_BASE`
 `LINK`
@@ -603,8 +601,19 @@ info;
 
 No acumules todas las intros al final si en el `.md` aparecen dentro del flujo.
 
+# 20. VARIABLES ADMINISTRATIVAS OBLIGATORIAS
 
-# 20. ENTREGA FINAL
+Al final, antes de `End Metadata`, garantiza estos identificadores reservados en este orden:
+
+Usa las definiciones técnicas acordadas por el proyecto:
+
+ELIMI "ESTA ENCUESTA SERÁ ELIMINADA POR NO CUMPLIR CON FILTRO DE LA ENCUESTA"
+text [0..200];
+
+GRACIAS_ELIMI "Gracias por participar"
+info;
+
+# 21. ENTREGA FINAL
 Genera un único archivo `.txt` cuyo nombre sea el nombre base del `.md` con la extensión reemplazada por `.txt`.
 
 El archivo debe contener únicamente la estructura MDD, desde el encabezado `Metadata(...)` compatible con la plataforma destino hasta `End Metadata`. No escribas explicaciones, diagnósticos, advertencias, listas de cambios ni texto adicional dentro del archivo resultante.
