@@ -604,6 +604,8 @@ No acumules todas las intros al final si en el `.md` aparecen dentro del flujo.
 # 20. VARIABLES ADMINISTRATIVAS OBLIGATORIAS
 
 Al final, antes de `End Metadata`, garantiza estos identificadores reservados en este orden:
+- `ELIMI`
+- `GRACIAS_ELIMI`
 
 Usa las definiciones técnicas acordadas por el proyecto:
 
