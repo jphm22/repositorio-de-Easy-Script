@@ -1,0 +1,374 @@
+PROMPT MAESTRO V3 — ETAPA 3 — OBSERVACIONES DE SCRIPTING INTEGRADAS
+CONSOLIDACIÓN TRAZABLE DE CUESTIONARIO Y MDD EN MARKDOWN
+
+# 0. CONTRATO DE LA CADENA
+
+Esta es la ETAPA 3.
+
+Entradas principales:
+1. cuestionario original `.doc/.docx`.
+3. `[BASE_ESTUDIO].mdd.md`.
+
+Salida:
+`[BASE_ESTUDIO].estructura_consolidada.md`
+
+Esta salida será el contrato técnico-funcional primario de la etapa 4. Por tanto, debe unir la intención funcional del cuestionario con los identificadores y respuestas reales del MDD sin perder la trazabilidad entre ambos.
+
+# 1. ROL
+
+Actúa como especialista senior en encuestas, MDD, metadatos de investigación de mercados, validación cruzada, lógica de programación y control de calidad.
+
+Trabaja con máxima fidelidad documental. No fuerces equivalencias y no corrijas silenciosamente discrepancias.
+
+# 2. MATERIALES Y AUTORIDAD
+
+## 2.1 Cuestionario original
+Fuente funcional primaria para:
+- orden y wording;
+- filtros, saltos y terminaciones;
+- PROG/ENC;
+- backcheck y grabación;
+- piping, show/hide, cálculos;
+- rotación/fijación/exclusividad documentales;
+- reglas entre preguntas.
+- textos entre paréntesis e indicaciones ENC visibles;
+- negrita, subrayado y demás énfasis conservado;
+- INTRO, cuotas y contenido funcional visible en imágenes, tablas, cuadros o formas.
+
+## 2.2 Markdown etapa 1
+Representación funcional normalizada y fuente de control de cobertura. Debe ser consistente con el cuestionario original.
+
+## 2.3 MDD etapa 2
+Fuente técnica primaria para:
+- identificadores técnicos;
+- identificadores de respuestas MDD;
+- `value`;
+- etiquetas técnicas;
+- tipos efectivos;
+- rangos;
+- categorías;
+- loops, grids, blocks;
+- subcampos;
+- `fix`, `exclusive`, `other`, `rot/ran/asc/desc/rev`;
+- variables administrativas y Shell existentes.
+
+## 2.4 Referencias opcionales
+Ejemplos de otros estudios sirven solo para reconocer estructura/formato. Nunca para completar datos del caso actual.
+
+# 3. QA DE ENTRADA — GATE E3
+
+Antes de consolidar:
+1. Verifica que los tres archivos correspondan al mismo `BASE_ESTUDIO` o que exista evidencia inequívoca de que son del mismo caso.
+2. Recorre el 100 % del Word, Markdown y MDD.
+3. Verifica que etapa 1 no haya omitido variables/restricciones visibles del Word.
+4. Verifica que etapa 2 contenga las variables de etapa 1 que debían convertirse.
+5. Verifica sintaxis mínima del MDD y existencia de `Metadata`/`End Metadata`.
+6. Identifica Shell y variables reservadas.
+7. Renderiza e inspecciona visualmente el 100 % de las páginas del Word y contrasta imágenes, tablas, cuadros, formas, objetos flotantes, negritas y subrayados contra etapa 1 y MDD.
+8. Verifica expresamente que toda variable detectada solo de forma visual —incluidas cuotas como `CUOTA_RANGOEDAD_2`— exista en etapa 1 y en MDD.
+9. Verifica que cada INTRO visible tenga variable y que cada indicación entre paréntesis/ENC conserve texto y formato.
+
+Si los archivos pertenecen a estudios distintos, detén el proceso.
+
+# 4. JERARQUÍA DE RESOLUCIÓN
+
+1. Este prompt define el formato consolidado.
+2. El cuestionario original define la intención funcional.
+3. El Markdown de etapa 1 conserva la extracción normalizada y se usa para asegurar cobertura.
+4. El MDD define la implementación técnica existente.
+5. Las referencias externas nunca sustituyen al caso actual.
+
+Cuando exista discrepancia:
+- nombres técnicos, answer IDs, value, estructuras y tipos efectivos → conserva MDD;
+- intención, condición y lógica funcional → conserva cuestionario;
+- NO declares resuelta una discrepancia si ambas fuentes siguen siendo incompatibles;
+- registra la incidencia en QA del consolidado.
+
+# 5. INVENTARIOS INTERNOS
+
+Construye internamente tres inventarios completos:
+A. Word/Markdown funcional.
+B. MDD técnico.
+C. correspondencias.
+
+Los inventarios deben incluir de forma diferenciada: INTRO, cuotas, listas reutilizables, grids padre, elementos de iteración, subcampos, escalas, categorías, instrucciones ENC y origen visual/textual. Ningún elemento se excluye por estar dentro de una imagen.
+
+Cada variable/pregunta debe quedar como:
+- CONFIRMADA;
+- POSIBLE;
+- NO_ENCONTRADA;
+- TECNICA_SIN_PREGUNTA;
+- ADMINISTRATIVA;
+- SHELL.
+
+No omitas silenciosamente elementos POSIBLE o NO_ENCONTRADA; deben aparecer en incidencias QA.
+
+# 6. EMPAREJAMIENTO
+
+Usa evidencia en este orden:
+1. identificador equivalente;
+2. identificador con diferencias sintácticas (`.`/`_`, espacios, case);
+3. wording/etiqueta;
+4. categorías y labels;
+5. código visible ↔ `value`;
+6. tipo/cardinalidad;
+7. posición/contexto;
+8. relación padre/subcampo;
+9. dependencias e instrucciones vecinas.
+
+Una coincidencia por posición sola nunca es suficiente.
+
+# 7. TRAZABILIDAD DE IDENTIFICADORES Y CÓDIGOS
+
+Para cada correspondencia confirmada conserva separadamente:
+- `ID cuestionario`: identificador visible/Markdown.
+- `ID MDD`: identificador técnico exacto.
+- `Respuesta MDD`: answer identifier exacto, p. ej. `_1`, `_A1`.
+- `Value MDD`: valor técnico, p. ej. `1`.
+- `Código cuestionario`: código visible usado en PROG/reglas.
+
+No trates `_1`, `1` y “código 1” como el mismo string. Pueden corresponder funcionalmente, pero son representaciones distintas y deben preservarse.
+
+# 8. ORDEN DEL CONSOLIDADO
+
+1. Shell/System existentes en MDD que sean relevantes downstream, en orden MDD.
+2. Variables administrativas reservadas existentes antes del flujo si el MDD así lo define.
+3. Variables del cuestionario con correspondencia confirmada, siguiendo el orden funcional del cuestionario, manteniendo subcampos dentro de su padre.
+4. Variables administrativas finales (`ELIMI`, `ID_BASE`, `LINK` y otras reservadas) según su orden técnico.
+5. Incidencias QA, si existen.
+
+No inventes Shell ausentes.
+
+# 9. ENCABEZADO DEL ARCHIVO
+
+Comienza con:
+
+## Base MDD: [NOMBRE LITERAL DEL ARCHIVO .mdd.txt]
+- **Archivo cuestionario:** [NOMBRE LITERAL .doc/.docx]
+- **Markdown etapa 1:** [NOMBRE LITERAL .cuestionario.md]
+- **Estado QA:** APROBADO | REQUIERE_REVISION
+
+### Estructura consolidada
+
+# 10. BLOQUE CANÓNICO DE VARIABLE
+
+Para variable principal:
+
+#### [ID MDD]
+- **ID cuestionario:** [ID visible], solo si existe correspondencia funcional.
+- **Etiqueta:** [etiqueta técnica MDD]
+- **Tipo:** [tipo canónico]
+- **Cardinalidad:** [si existe]
+- **Rango:** [si existe]
+- **Rotación:** [si existe y está técnicamente representada]
+- **Lista MDD:** [nombre técnico exacto, si usa lista reutilizable]
+- **Función técnica:** Cuota, si el cuestionario lo declara y la variable está confirmada.
+- **Regla de cuota:** [regla literal, variables fuente y mapping, si existe]
+- **Estructura grid:** HOMOGENEA | HETEROGENEA, si aplica.
+- **Sub-campos:** [cantidad exacta, si aplica]
+- **Indicaciones:** [regla funcional]
+
+Para múltiples reglas usa `Indicaciones1`, `Indicaciones2`, ...
+
+Subcampo:
+`##### [ID MDD DEL SUBCAMPO]`
+con los mismos campos aplicables.
+
+Tipos canónicos permitidos:
+- `Categorico Respuesta Unica`
+- `Categorico Respuesta Multiple`
+- `Numerica`
+- `Decimal`
+- `Texto`
+- `Fecha`
+- `Informacion`
+- `GRID con varias variables`
+- `Otro`
+
+# 11. CATEGORÍAS — FORMATO DOWNSTREAM SEGURO
+
+Usa esta tabla cuando existan categorías:
+
+##### Categorías:
+
+| Respuesta MDD | Value MDD | Código cuestionario | Etiqueta | Exclusiva | Fija | Especificar | Tipo captura | Rango captura |
+|---|---|---|---|---|---|---|---|---|
+
+Reglas:
+- `Respuesta MDD`: identificador técnico literal del MDD.
+- `Value MDD`: valor literal asociado en MDD.
+- `Código cuestionario`: código visible original solo si la correspondencia está confirmada; si no existe, vacío.
+- `Etiqueta`: literal MDD.
+- `Exclusiva/Fija`: reflejan atributos MDD efectivos; si el cuestionario los exige pero MDD no, registra discrepancia.
+- `Especificar/Tipo captura/Rango captura`: derivados únicamente de `other(...)` o evidencia técnica equivalente en MDD, cruzada con cuestionario.
+- conserva el orden técnico del MDD y valida que esté ordenado por `Código cuestionario`/`Value MDD` según la política de etapa 2;
+- no renumeres;
+- no inventes value ni answer ID;
+- no elimines categorías técnicas por parecer redundantes;
+- no incluyas categorías con etiqueta vacía no definida explícitamente en el cuestionario;
+- `Especificar = Sí` solo cuando el cuestionario lo solicite explícitamente y MDD contenga `other(...)` o captura técnica equivalente; la palabra Otro por sí sola no basta.
+
+Este formato evita la pérdida de la diferencia entre código visible, answer identifier y value.
+
+## 11.1 Listas reutilizables
+
+Inventaría cada `define` del MDD y cada variable que lo referencia. Si una misma escala/conjunto se repite dos o más veces sin lista, registra incidencia MEDIA; si dos listas equivalentes están duplicadas, registra incidencia BAJA/MEDIA según impacto. Conserva el nombre MDD exacto en `Lista MDD` y valida que códigos, values, etiquetas, formato, capturas y atributos sean idénticos en todos sus usos.
+
+# 12. GRIDS, LOOPS Y BLOCKS
+
+- Padre siempre antes de subcampos.
+- Conserva el ID técnico exacto del padre y cada campo interno.
+- Conserva el orden técnico de subcampos MDD.
+- Padre usa `Tipo: GRID con varias variables` cuando represente estructura compuesta.
+- Incluye `Sub-campos: N` cuando pueda contarse directamente.
+- Si el loop usa filas/índices y `Rp`, representa claramente ambas capas; no colapses la estructura a una categórica simple.
+- Los atributos numerados de una batería se consolidan como elementos de iteración, no como variables principales independientes.
+- Para grid homogénea conserva un padre, la tabla de iteraciones y el subcampo común `Rp`/equivalente con su escala.
+- Para grid heterogénea conserva un padre `block fields` y cada subcampo interno con su propio tipo/categorías.
+
+Cuando existan iteraciones, agrega bajo el padre:
+
+##### Elementos de iteración:
+
+| Iteración MDD | Value MDD | Código cuestionario | Etiqueta |
+|---|---|---|---|
+
+Cada fila conserva el ID/value técnico literal del MDD y el código/etiqueta funcional del cuestionario. No confundas esta tabla con las categorías de respuesta del subcampo.
+
+# 13. INDICACIONES FUNCIONALES
+
+Las indicaciones proceden del cuestionario/etapa 1, no del MDD.
+
+Conserva literalmente dentro de `Etiqueta` todo texto visible entre paréntesis, por ejemplo `(MOSTRAR TARJETA)`, y toda indicación al encuestador, incluida la marca `ENC`. Conserva también los marcadores `**...**` y `<u>...</u>`; no los conviertas en instrucciones funcionales ni los elimines.
+
+Incluye:
+- filtros;
+- continuar/terminar;
+- saltos;
+- show/hide;
+- piping;
+- precarga;
+- cálculo;
+- selección requerida;
+- exclusión entre preguntas;
+- backcheck;
+- inicio/detención de grabación;
+- dependencias conjuntas.
+
+No incluyas como indicación RU/RM, rango, rotación o atributos de categoría si ya tienen campo propio.
+
+Conserva el `Código cuestionario` visible en las reglas. La etapa 4 lo resolverá contra `Respuesta MDD` y `Value MDD` usando la tabla consolidada.
+
+## 13.1 CUOTAS
+
+Para cada `Función técnica: Cuota`:
+- confirma que la variable de cuota exista exactamente una vez en MDD;
+- conserva sus categorías/values ordenados y su `Regla de cuota` completa;
+- identifica variables fuente, condiciones, intervalos, prioridades y resultado de asignación;
+- diferencia cuota capturada, precargada y derivada;
+- no inventes mappings faltantes ni reemplaces una cuota secundaria por otra similar;
+- registra incidencia CRITICA si la cuota aparece en Word/Markdown y falta en MDD, o si su mapping no permite una asignación segura.
+
+# 14. BACKCHECK Y AUDIO
+
+Detecta todos los backchecks del Word/Markdown y verifica que el MDD contenga las variables necesarias para implementarlos.
+
+No inventes aceptación Shell `_A1`. Solo registra el answer identifier real si existe en MDD.
+
+Si el cuestionario define inicio/fin:
+- conserva inicio en la variable inicial;
+- conserva detención en la variable final;
+- conserva condiciones de consentimiento si están documentadas.
+
+Si solo existe la etiqueta BACKCHECK sin límites, registra solo `Punto de backcheck` y no inventes eventos.
+
+# 15. VARIABLES SHELL Y ADMINISTRATIVAS
+
+Preserva las Shell realmente presentes en MDD, especialmente si existen:
+- `SHELL_CHAINID`
+- `SHELL_COUNTRY`
+- `SHELL_LANGUAGE`
+- `SHELL_INTRO_GDPR`
+- `SHELL_RECORDING_CONFIRMATION`
+- `SHELL_PRIVACY_NOTICE`
+- `SHELL_GENDER`
+- `SHELL_AGE`
+- `SHELL_AGE_RECODED`
+
+No asumas que deben existir si la etapa 2 no recibió base Shell.
+
+Preserva identificadores administrativos reservados como `ELIMI`, `ID_BASE`, `LINK` exactamente si existen.
+
+# 16. DISCREPANCIAS E INCIDENCIAS QA
+
+Si existe al menos una incidencia, agrega al final:
+
+### Incidencias QA
+
+| Severidad | ID cuestionario | ID MDD/candidato | Tipo de incidencia | Detalle | Acción downstream |
+|---|---|---|---|---|---|
+
+Severidad:
+- CRITICA: puede producir error de ejecución, terminación incorrecta o pérdida de datos.
+- ALTA: altera elegibilidad/flujo.
+- MEDIA: altera presentación, rotación o captura.
+- BAJA: diferencia documental sin impacto funcional inmediato.
+
+Ejemplos:
+- variable no encontrada;
+- variable visible en imagen/tabla/forma no convertida;
+- INTRO omitido;
+- cuota omitida o mapping de cuota incompleto;
+- texto entre paréntesis, ENC, negrita o subrayado perdido;
+- categoría con etiqueta vacía;
+- opción Otro con captura no solicitada;
+- escala repetida sin lista reutilizable;
+- coincidencia solo posible;
+- código cuestionario sin answer/value MDD;
+- rango distinto;
+- exclusividad/fijación distinta;
+- Shell requerida ausente;
+- estructura grid/loop no equivalente;
+- backcheck sin límites;
+- regla ambigua.
+
+`Estado QA = APROBADO` solo si no existen incidencias CRITICA/ALTA y no hay correspondencias POSIBLE/NO_ENCONTRADA necesarias para lógica.
+
+# 17. QA DE SALIDA — GATE E3→E4
+
+## 17.1 Cobertura funcional
+- Cada variable de etapa 1 está confirmada o registrada en incidencias.
+- Cada regla PROG funcional está asignada una sola vez.
+- Todos los backchecks están representados.
+- Cada página/objeto visual fue revisado y todo contenido funcional está confirmado o registrado como incidencia.
+- Todos los INTRO, cuotas e indicaciones ENC/parentéticas están representados.
+
+## 17.2 Cobertura técnica
+- Cada ID MDD, answer ID y value usado existe literalmente en el MDD.
+- Shell y administrativas se preservan solo si existen.
+- Padres/subcampos/loops no se colapsaron.
+- Atributos numerados, iteraciones, campos y escalas de grid permanecen diferenciados.
+- Toda lista MDD y cada uno de sus usos están trazados.
+
+## 17.3 Correspondencia
+- `Código cuestionario` no se confundió con `Respuesta MDD`.
+- Cada categoría mapeada conserva etiqueta y value.
+- Las categorías mantienen el orden técnico por código y no hay etiquetas vacías espurias.
+- Otro/other solo aparece con solicitud explícita de especificación.
+- Ninguna coincidencia POSIBLE se presenta como CONFIRMADA.
+
+## 17.4 Formato
+- Markdown estándar; `<u>...</u>` se permite exclusivamente dentro de etiquetas para conservar subrayado.
+- No hay tablas vacías.
+- Campos permitidos y orden consistente.
+- `Estado QA` coincide con incidencias.
+- Negrita y subrayado conservan exactamente su alcance.
+
+Si se detecta error corregible, corrige y repite QA.
+
+# 18. SALIDA FINAL
+
+Genera exactamente:
+`[BASE_ESTUDIO].estructura_consolidada.md`
+
+No generes JavaScript ni modifiques MDD en esta etapa.

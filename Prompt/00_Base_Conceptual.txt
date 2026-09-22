@@ -1,8 +1,8 @@
 BASE DE CONOCIMIENTO CONSOLIDADA
 CUESTIONARIOS, MDD, iFIELD Y OSM
 
-Versión consolidada: 2.0
-Fecha: 21 de septiembre de 2026
+Versión consolidada: 2.1
+Fecha: 22 de septiembre de 2026
 Formato: texto plano
 
 PROPÓSITO
@@ -10,7 +10,7 @@ PROPÓSITO
 Este documento consolida los estándares conceptuales, criterios de construcción y casos de referencia contenidos en:
 
 1. Base_Conocimiento_Estandares_Criterios_Cuestionarios_MDD_iField_OSM.md
-2. Metatool Ifield V3 1 (1).txt
+2. Metatool Ifield V3 1.txt
 3. Ejemplo de Casos.txt
 
 La consolidación elimina repeticiones, omite instrucciones relacionadas con JSON y mantiene únicamente información útil para interpretar cuestionarios, construir estructuras MDD, implementar comportamiento en iField/OSM y validar la trazabilidad entre requerimiento, modelo y ejecución.
@@ -237,14 +237,15 @@ Se puede inferir, con evidencia suficiente
 - que “RM” implica múltiples selecciones;
 - que “preguntar por cada marca” sugiere una iteración;
 - que “mostrar solo los seleccionados” exige una dependencia;
+- fix solo por etiqueta que señale "otros" y parecidos;
+- fix exclusive solo por etiqueta que señale "ninguno" y parecidos;
+- una semántica universal para 94, 96, 98 o 99;
 - que una escala común a varias filas es un patrón de matriz.
 
 No se debe inferir sin evidencia
 
 - límites no escritos;
 - códigos faltantes;
-- exclusividad solo por costumbre;
-- una semántica universal para 94, 96, 98 o 99;
 - el significado de un valor numérico de _Osm_QuestionLayoutID o _Osm_ContentRuleID;
 - un filtro, recode o terminación porque otro estudio similar lo use.
 
@@ -346,7 +347,7 @@ fix y exclusive
 - exclusive impide combinarla con otras respuestas cuando el significado funcional exige exclusividad.
 - fix exclusive combina ambas funciones.
 
-Regla crítica: códigos como 94, 96, 98 o 99 no tienen una semántica universal. La decisión depende del texto y del comportamiento del caso concreto.
+Regla crítica: códigos como 94, 96, 98 o 99 tienen una semántica universal. Colocar fix o fix exclusive según corresponda.
 
 12. STD-MDD-04 — Tipos no categóricos
 
@@ -1169,7 +1170,7 @@ Caso INN-F22: el conjunto contiene múltiples filas, pero cada fila es categoric
 
 71. AP-05 — Generalizar códigos especiales
 
-No asignar automáticamente semántica a 94, 96, 98 o 99. Debe leerse la etiqueta y la instrucción específica.
+Asignar automáticamente semántica a 94, 96, 98 o 99. Debe leerse la etiqueta y Colocar fix o fix exclusive según corresponda.
 
 72. AP-06 — Usar _Osm_HiddenComment para guardar reglas de flujo
 
@@ -1998,6 +1999,104 @@ Si el ID, wording y código MDD no mantienen correspondencia semántica, el frag
 
 El ejemplo S1 del archivo de casos demuestra que un catálogo de ejemplos puede contener fragmentos desalineados. La similitud de ID no sustituye la validación funcional.
 
+
+---------------------------------------------------------------------
+CASO 14. LOOP FILTRADO POR UNIÓN DE VARIABLES PREVIAS
+Situación
+
+Una pregunta tipo loop utiliza un universo completo de categorías, pero las iteraciones visibles se construyen dinámicamente a partir de respuestas obtenidas en múltiples variables anteriores.
+
+Ejemplo:
+
+P3 contiene marcas recordadas.
+P4 contiene marcas adicionales.
+P6 contiene marcas seleccionadas previamente.
+P6_0 debe mostrarse únicamente para las marcas presentes en cualquiera de esas preguntas.
+
+Estructura MDD
+
+P6_0 "P6_0"
+loop
+{
+    use MARCAS sublist "",
+
+    _94 "{#P3._94._C_94#}" [value = 94],
+    _941 "{#P4._941._C_941#}" [value = 941],
+    _95 "{#P4._95._C_95#}" [value = 95]
+
+} fields -
+(
+    SL "¿Qué tan bien recuerda esta publicidad?" loop
+    {
+        _1 "."
+    } fields -
+    (
+        Rp ""
+        categorical [1..1]
+        {
+            use lstEscala1a10 ""
+        };
+    )
+    expand grid;
+)
+expand grid;
+
+Lógica OSM
+
+OSM.Survey.P6_0.addEventListener('onBeforeNavigateTo', function(e){
+
+    var lst = fun.union(
+        s.P3.getAnswers(),
+        s.P4.getAnswers()
+    );
+
+    lst = fun.union(
+        lst,
+        s.P6.getAnswers()
+    );
+
+    lst = fun.substract(
+        lst,
+        "_98,_99"
+    );
+
+    e.sourceElement.filterIterations(lst);
+    e.sourceElement.set("skipHeaderSlide", true);
+
+});
+
+Patrón reutilizable
+
+Aplica cuando el cuestionario indique:
+
+Mostrar solo marcas mencionadas.
+Mostrar solo marcas recordadas.
+Mostrar solo elementos seleccionados anteriormente.
+Unir respuestas provenientes de múltiples preguntas fuente.
+
+---------------------------------------------------------------------
+CASO 15. GRID DENTRO DE LOOP (MATRIZ ANIDADA)
+
+Usar las listas pertinentes para cualquier nivel de la variable
+
+BRAND_CLOSENESS loop
+{
+    use MARCAS sublist ""
+} fields -
+(
+    BC loop
+    {
+        _1 "."
+    } fields -
+    (
+        Rp ""
+        categorical [1..1]
+        {
+            use lstEscala1a10 ""
+        };
+    );
+);
+
 ======================================================================
 REGLAS FINALES DE USO
 ======================================================================
@@ -2014,5 +2113,796 @@ REGLAS FINALES DE USO
 10. En estudios INN, revisar expresamente prueba de producto, rotación, celda, prod_1, prod_2 y demás posiciones requeridas.
 11. Documentar cualquier excepción, contradicción o ausencia de evidencia.
 12. Mantener la solución más simple que reproduzca fielmente el requerimiento.
+
+
+
+======================================================================
+AMPLIACIÓN TÉCNICA DE REFERENTES Y CASOS — VERSIÓN 2.1
+======================================================================
+
+Esta ampliación se adiciona sin reemplazar la estructura ni los criterios existentes. Su finalidad es incorporar nuevos referentes observados para cardinalidades, instrucciones, backcheck, matrices, loops anidados, filtros, variables derivadas, validaciones, diseños MaxDiff, sliders, carry-forward y comportamiento dinámico en OSM.
+
+119. REFERENTES DIRECTOS DE INDICACIÓN A IMPLEMENTACIÓN
+
+119.1 Indicación → REFERENTE
+La palabra “Indicación” identifica el requerimiento funcional u operativo del cuestionario. “Referente” identifica una estructura MDD o una lógica OSM comprobada que puede orientar la implementación.
+
+Regla de uso:
+- El referente no sustituye la validación del caso concreto.
+- Debe conservarse la separación Indicación → MDD → Lógica → Efecto.
+- Si el referente contiene un ID específico, este debe sustituirse por el ID real del nuevo estudio.
+
+119.2 Máximo tres respuestas
+Indicación:
+MÁX. 3 RESPUESTAS
+
+Referente MDD:
+categorical [1..3]
+
+Criterio:
+La restricción corresponde a la cardinalidad del campo. No se requiere lógica adicional únicamente para impedir una cuarta respuesta.
+
+119.3 BACKCHECK
+Indicación:
+BACKCHECK
+
+Referente OSM:
+OSM.Survey.S5.addEventListener('onEntrance', function(e){
+    var xID = OSM.Survey.SHELL_CHAINID.getComment();
+    OSM.Survey.startSilentAudioRecording(xID + "_(S5)");
+});
+
+OSM.Survey.S5.addEventListener('onNext', function(e){
+    OSM.Survey.stopSilentAudioRecording();
+});
+
+Criterio:
+- onEntrance inicia la grabación.
+- onNext detiene la grabación.
+- El ID de pregunta debe formar parte del nombre generado para conservar trazabilidad.
+- Solo se aplica cuando el proyecto confirma que BACKCHECK equivale a grabación silenciosa.
+
+119.4 Mostrar tarjeta
+Indicaciones y referentes:
+
+MOSTRAR TARJETA CANDIDATOS - ROTACIÓN A o B
+_Osm_HiddenComment = "<font color=\"Cyan\">(MOSTRAR TARJETA CANDIDATOS - ROTACIÓN A o B)</font>"
+
+MOSTRAR TARJETA S8
+_Osm_HiddenComment = "<font color=\"Cyan\">(MOSTRAR TARJETA S8)</font>"
+
+Criterio:
+La instrucción se asocia al nodo mediante _Osm_HiddenComment cuando está separada del wording. La tarjeta no crea por sí sola un filtro o salto.
+
+120. MATRICES, LOOPS Y BATERÍAS DE REPUTACIÓN
+
+120.1 M5: matriz RU por fila
+Situación:
+Evaluar varias poblaciones con una escala común “Beneficia / Perjudica / NP”, aleatorizando las filas.
+
+Referente:
+M5 "M5. Por lo general, ¿la minería formal beneficia o perjudica a <font color=\"Cyan\">(LEER OPCIONES)</font>?"
+    [
+        _Osm_AllowWatermarks = true
+    ]
+loop
+{
+    _1 "La población de la comunidad o distrito donde se desarrolla la mina",
+    _2 "La población de la región donde se desarrolla la mina",
+    _3 "La población del país en general"
+} ran fields -
+(
+    Rp ""
+        style(
+            Control(
+                Type = "DropList"
+            )
+        )
+    categorical [1..1]
+    {
+        _1 "Beneficia" [value = 1],
+        _2 "Perjudica" [value = 2],
+        _99 "NP" [value = 99] fix exclusive
+    };
+) expand grid;
+
+Criterio:
+- El loop contiene las entidades evaluadas.
+- ran fields aleatoriza las filas.
+- Rp conserva una respuesta por fila.
+- NP se mantiene fija y exclusiva cuando así lo exige el instrumento.
+
+120.2 Pirámide de reputación P1 a P4
+Situación:
+P1 mide conocimiento. P2, P3 y P4 solo deben evaluar empresas con códigos 2, 3, 4 o 5 en P1.
+
+Estructura declarativa:
+- P1, P2, P3 y P4 mantienen loops independientes sobre el mismo universo de empresas.
+- Cada loop contiene una escala RU propia.
+- Las filas se pueden aleatorizar mediante ran fields cuando el cuestionario lo exige.
+
+Comportamiento requerido:
+1. Recorrer las iteraciones visibles de P1.
+2. Construir una lista con empresas cuyo Rp tenga _2, _3, _4 o _5.
+3. Filtrar las iteraciones de P2, P3 y P4 con esa lista.
+4. Ocultar el nodo completo si la lista queda vacía.
+5. Restablecer el universo antes de refiltrar cuando exista retroceso o edición.
+
+Patrón conceptual:
+OSM.Survey.P2.addEventListener('onBeforeNavigateTo', function(e){
+    var arr = [];
+    OSM.Survey.P1.getVisibleIterations().forEach(function(it){
+        if (it.Rp.isAnswerSelected('_2,_3,_4,_5')) {
+            arr.push(it.get('objectName'));
+        }
+    });
+    if (arr.length > 0) {
+        e.sourceElement.show();
+        e.sourceElement.filterIterations(arr.join(','));
+    } else {
+        e.sourceElement.hide();
+    }
+});
+
+Escalas observadas:
+- P1: conocimiento, códigos 1 a 5.
+- P2: favorabilidad, códigos 1 a 5 y 99.
+- P3: confianza, códigos 1 a 5 y 99.
+- P4: recomendación o advocacy, códigos 1 a 5 y 99.
+
+120.3 P5: empresa por driver
+Situación:
+Cada empresa elegible debe evaluarse sobre varios atributos o drivers.
+
+Modelo:
+Empresa → Driver → Calificación
+
+Estructura:
+- Loop exterior de empresas.
+- Loop interior de drivers.
+- Field Rp dentro del loop interior.
+- Escala común 1 a 5 y residual 99.
+- _Osm_DisplayMode = 3 cuando se requiere evaluación secuencial por empresa.
+
+Criterio:
+Los dos loops representan dimensiones reales. No deben aplanarse en variables independientes si la relación empresa-driver debe conservarse.
+
+120.4 Filtro de empresas por conocimiento previo
+Referente P6:
+Una batería empresa × driver puede filtrar el loop externo con base en respuestas 2 a 5 de variables previas P1A, P1B y P1C.
+
+Patrón:
+OSM.Survey.P6.addEventListener('onBeforeNavigateTo', function(e){
+    var arr = [];
+    if (s.B_P1A_P1C.P1A.isAnswerSelected('_2,_3,_4,_5')) arr.push('_1');
+    if (s.B_P1A_P1C.P1B.isAnswerSelected('_2,_3,_4,_5')) arr.push('_2');
+    if (s.B_P1A_P1C.P1C.isAnswerSelected('_2,_3,_4,_5')) arr.push('_3');
+    e.sourceElement.filterIterations(arr.join(','));
+});
+
+121. RANKING Y MENCIONES SUCESIVAS
+
+121.1 P18: primera a tercera mención
+Situación:
+Capturar hasta tres menciones en pantallas distintas, ordenadas de mayor a menor exposición.
+
+Modelo:
+- Loop de posiciones: 1.ª, 2.ª y 3.ª mención.
+- Rp categorical [1..1] por posición.
+- _Osm_DisplayMode = 3 para recorrido secuencial.
+- “Ninguno adicional” puede habilitarse únicamente desde la segunda pantalla.
+- “No sabe / No precisa” puede generar salto cuando se selecciona en la primera pantalla.
+
+Criterio adicional:
+Si no se permiten alternativas repetidas entre menciones, debe incorporarse validación transversal o filtrado de respuestas ya usadas. La cardinalidad [1..1] solo controla cada posición individual.
+
+122. CONOCIMIENTO Y DETALLE POR INICIATIVA
+
+122.1 I2 → I3
+Situación:
+I2 pregunta si se conoce cada iniciativa. I3 pregunta qué empresa o institución la ejecuta, únicamente para las iniciativas conocidas.
+
+Modelo:
+- I2: loop de iniciativas con Rp RU Sí/No.
+- I3: loop equivalente con Rp RU de empresa/institución.
+- Ambos loops deben compartir los mismos objectName para facilitar trazabilidad.
+
+Lógica de referencia:
+OSM.Survey.I3.addEventListener('onBeforeNavigateTo', function(e){
+    var arr = [];
+    s.I2.getVisibleIterations().forEach(function(it){
+        if (it.Rp.isAnswerSelected('_1')) {
+            arr.push(it.get('objectName'));
+        }
+    });
+    if (arr.length > 0) {
+        e.sourceElement.show();
+        e.sourceElement.filterIterations(arr.join(','));
+    } else {
+        e.sourceElement.hide();
+    }
+});
+
+Criterio:
+El requisito “solo código 1 en I2” afecta iteraciones, no categorías de I3.
+
+122.2 P7/P8 en una misma iteración
+Situación:
+P7 captura conocimiento y P8 se habilita dentro de la misma fila únicamente cuando P7 = Sí.
+
+Estructura:
+- Un loop de iniciativas.
+- Dos fields: P7 y P8.
+- P8 puede declararse opcional en OSM y validarse con función custom.
+
+Referente:
+OSM.Survey.ValP8 = function(e){
+    if (e.sourceElement.get('parent').P7.isAnswerSelected('_1') &&
+        lib.count(e.sourceElement.getAnswers()) === 0) {
+        return {message: 'Marque una opción.', status: false};
+    }
+    return {status: true};
+};
+
+OSM.Survey.P7_P8.get('protoIteration').P7.addEventListener('onInputChange', function(e){
+    if (e.sourceElement.isAnswerSelected('_1')) {
+        e.sourceElement.get('parent').P8.enableAnswers();
+    } else {
+        e.sourceElement.get('parent').P8.disableAnswers();
+    }
+});
+
+Criterio:
+Este patrón es adecuado cuando conocimiento y detalle se presentan en la misma grilla. Si se presentan en nodos separados, corresponde filtrar iteraciones del nodo posterior.
+
+123. MARCAS, CLIENTES Y VARIABLES DERIVADAS
+
+123.1 Insertar lista de marcas
+Indicación:
+PROG: INSERT BRAND LIST
+
+Criterio:
+Cuando el catálogo de marcas se reutiliza, debe declararse una lista y consumirse con use. El orden y los objectName deben mantenerse alineados con la lógica posterior.
+
+123.2 Q5: familiaridad y filtro de elegibilidad
+Situación:
+Al menos una de las marcas específicas debe tener códigos 4, 5 o 6. De lo contrario, se termina la entrevista.
+
+Referente:
+OSM.Survey.Q5.addEventListener('onNext', function(e){
+    var cumple =
+        e.sourceElement.getIteration('_3').Rp.isAnswerSelected('_4,_5,_6') ||
+        e.sourceElement.getIteration('_4').Rp.isAnswerSelected('_4,_5,_6') ||
+        e.sourceElement.getIteration('_6').Rp.isAnswerSelected('_4,_5,_6');
+
+    if (!cumple) {
+        OSM.Survey.ELIMI.setComment(
+            e.sourceElement.get('objectName') +
+            '.No cumple filtro. Agradecer y terminar encuesta.'
+        );
+        OSM.Survey.get('navigator').goTo(OSM.Survey.ELIMI);
+    }
+});
+
+Criterio:
+La lista de marcas y sus IDs debe verificarse antes de reutilizar el referente. La terminación ocurre después de guardar la respuesta y registrar el motivo.
+
+123.3 Crear variable CLIENTE
+Indicación:
+- Código 4, 5 o 6 en una marca → CLIENTE.
+- Código 1, 2 o 3 → NO CLIENTE.
+
+Modelo recomendado:
+- Declarar una variable derivada separada por marca o una clasificación con dominio explícito.
+- Asignarla en onNext de Q5.
+- No sobrescribir Q5.
+- Mantener trazabilidad entre marca, respuesta fuente y clasificación.
+
+124. CARRY-FORWARD DE MARCAS Y RESPUESTAS
+
+124.1 Q5.1: mostrar marcas usadas
+Situación:
+Preguntar motivos de contratación solo para marcas con códigos 3, 4, 5 o 6 en Q5.
+
+Referente:
+OSM.Survey.Q5_1.addEventListener('onBeforeNavigateTo', function(e){
+    var arr = [];
+    s.Q5.getVisibleIterations().forEach(function(it){
+        if (it.Rp.isAnswerSelected('_3,_4,_5,_6')) {
+            arr.push(it.get('objectName'));
+        }
+    });
+    e.sourceElement.filterIterations(arr.join(','));
+    e.sourceElement.set('skipHeaderSlide', true);
+});
+
+Criterio:
+- Q5_1 conserva el universo completo en MDD.
+- La lógica limita las iteraciones al subconjunto elegible.
+- La respuesta dentro de cada marca puede ser RM con “Otros” y campo asociado.
+
+124.2 SOW: trasladar marcas usuarias y sumar 100
+Situación:
+Mostrar solo marcas con códigos 4, 5 o 6 en Q5. Capturar porcentajes entre 1 y 100. La suma debe ser exactamente 100.
+
+Estructura MDD:
+- Loop sobre marcas.
+- Rp long [1..100].
+- _Osm_CustomFunction = "ValSOW".
+- Texto dinámico para mostrar el acumulado.
+
+Referente de validación:
+OSM.Survey.ValSOW = function(e){
+    var sum = 0;
+    var runVal = true;
+
+    OSM.NotificationSystem.hideAllNotifications();
+
+    e.sourceElement.get('parent').get('parent').getVisibleIterations().forEach(function(it){
+        runVal = !it.Rp.isBlank() && runVal;
+        var ans = parseInt(it.Rp.getComment());
+        if (!isNaN(ans)) sum += ans;
+    });
+
+    if (sum !== 100 && runVal) {
+        return {
+            status: false,
+            message: 'SUMATORIA DEBE ALCANZAR EL 100%'
+        };
+    }
+    return {status: true};
+};
+
+Referente de filtro y autocompletado:
+OSM.Survey.SOW.addEventListener('onBeforeNavigateTo', function(e){
+    var arr = [];
+    s.Q5.getVisibleIterations().forEach(function(it){
+        if (it.Rp.isAnswerSelected('_4,_5,_6')) {
+            arr.push(it.get('objectName'));
+        }
+    });
+
+    e.sourceElement.show();
+    e.sourceElement.filterIterations(arr.join(','));
+
+    if (arr.length === 1) {
+        e.sourceElement.getIteration(arr[0]).Rp.setComment(100);
+        e.sourceElement.hide();
+    }
+});
+
+Referente de suma en vivo:
+OSM.Survey.SOW.get('protoIteration').Rp.addEventListener('onInputChange', function(e){
+    var sum = 0;
+    e.sourceElement.get('parent').get('parent').getVisibleIterations().forEach(function(it){
+        var currentVal = parseInt(it.Rp.getComment());
+        if (!isNaN(currentVal)) sum += currentVal;
+    });
+    OSM.Survey.setInsert('msjSumaPorcentajes', sum);
+});
+
+Criterio:
+- Rango individual: MDD.
+- Elegibilidad de marcas: filtro de iteraciones.
+- Total entre filas: lógica transversal.
+- Una sola marca: autocompletar 100 y omitir interacción.
+
+125. SLIDER DE CERCANÍA DE MARCA
+
+125.1 INV / CLBVC
+Situación:
+Medir cercanía por marca en escala 1 a 10 mediante un slider custom.
+
+Estructura observada:
+- Loop de marcas.
+- _Osm_DisplayMode = 3.
+- Rp double con codes 1 a 10.
+- _Osm_QuestionLayoutID = 10.
+- _Osm_Label = "Yo" o "Me", según el diseño.
+- _Osm_IsGenericMultipleSelection = false.
+
+Referente:
+OSM.Survey.INV.get('protoIteration').Rp.addEventListener('onBeforeNavigateTo', function(e){
+    e.sourceElement.set('template', 'ClosenessSliderTemplate');
+});
+
+OSM.Survey.INV.addEventListener('onBeforeNavigateTo', function(e){
+    e.sourceElement.filterIterations(s.SET_CONSIDERACION.getAnswers());
+    e.sourceElement.set('skipHeaderSlide', true);
+});
+
+Criterio:
+- El layout y template dependen de la plataforma y deben corroborarse.
+- La selección del consideration set afecta las iteraciones del loop.
+- La escala declarada no debe inferirse de la apariencia del slider.
+
+126. DISEÑO MAXDIFF POR VERSIÓN Y SET
+
+126.1 Tabla de diseño
+Situación:
+Una variable VERSION asigna, para cada set, cuatro ítems que deben presentarse en un orden definido.
+
+Modelo:
+- VERSION es categorical [1..1].
+- Cada versión contiene una secuencia de sets separada por “;”.
+- Cada set contiene objectName de ítems separados por comas.
+- Los nodos SET1 a SET11 comparten el mismo patrón de respuesta.
+
+Comportamiento:
+1. Obtener la versión seleccionada.
+2. Separar su diseño por set.
+3. Reordenar respuestas con ut.reorder.
+4. Ocultar el universo de respuestas.
+5. Mostrar solo los cuatro ítems asignados al set.
+6. Guardar la versión en una variable de cuota o control cuando corresponda.
+
+Patrón conceptual:
+OSM.Survey.VERSION.addEventListener('onNext', function(e){
+    var lista = {
+        _1: '...sets de versión 1...',
+        _2: '...sets de versión 2...',
+        _3: '...sets de versión 3...'
+    };
+
+    var arr = lista[e.sourceElement.getAnswers()].split(';');
+
+    s.SET1.getVisibleIterations().forEach(function(it){
+        ut.reorder('Rp', arr[0], it, OSM.Survey);
+        it.Rp.hideAnswers();
+        it.Rp.showAnswers(arr[0]);
+    });
+
+    s.CUOTA_VERSION.setAnswers(e.sourceElement.getAnswers());
+});
+
+Criterio:
+El mismo patrón se replica para SET2, SET3, etc., usando la posición correspondiente de arr. El diseño debe provenir de la tabla autorizada, no generarse aleatoriamente durante la entrevista.
+
+126.2 Validación Más importante / Menos importante
+Situación:
+En cada set MaxDiff, el atributo seleccionado como “MÁS IMPORTANTE” debe ser distinto del seleccionado como “MENOS IMPORTANTE”.
+
+Referente:
+OSM.Survey.validaMaxDiff = function(e){
+    var preg = e.sourceElement;
+    var objLoop = preg.parent().parent();
+    var resultado = true;
+    var lista = '';
+    var c = 0;
+
+    OSM.NotificationSystem.removeAllNotifications();
+
+    objLoop.getVisibleIterations().forEach(function(iterator){
+        var atributo = iterator.get('objectName');
+        var iteration = objLoop.getIteration(atributo);
+        var npreg = preg.get('objectName');
+
+        if (!lib.containsAny(iteration[npreg].getAnswers(), lista)) {
+            lista = lib.union(lista, iteration[npreg].getAnswers());
+        } else {
+            c++;
+        }
+    });
+
+    if (c > 0) resultado = false;
+
+    if (!resultado && e.name !== 'onInputChange') {
+        return {
+            status: false,
+            message: 'ATRIBUTOS MÁS IMPORTANTE Y MENOS IMPORTANTE DEBEN SER DISTINTOS.'
+        };
+    }
+    return {status: true};
+};
+
+Criterio:
+Esta es una validación entre fields/iteraciones y no puede resolverse únicamente con cardinalidad local.
+
+127. PREGUNTAS ABIERTAS POR MARCA
+
+127.1 BRANDREJ_2
+Situación:
+Preguntar espontáneamente por qué no visitaría cada marca rechazada o incluida en un conjunto dinámico.
+
+Modelo:
+- Loop de marcas.
+- _Osm_DisplayMode = 3.
+- Text [0..4000] por marca.
+- {@} inserta la marca actual.
+- La lógica debe filtrar el loop con el conjunto de marcas rechazadas o flag correspondiente.
+
+Criterio:
+La lista declarada define el universo. El flag o set de consideración define las iteraciones activas.
+
+128. ASOCIACIÓN DE ATRIBUTOS Y BARRERAS POR MARCA
+
+128.1 P10: atributos × centros comerciales
+Situación:
+Por cada atributo aleatorizado, seleccionar una o más marcas conocidas. “Ninguno” es exclusivo.
+
+Modelo:
+- Loop de atributos con ran fields.
+- Rp categorical múltiple.
+- Marcas como categorías.
+- Residual “Ninguno” fix exclusive.
+- _Osm_DisplayMode = 3 cuando se pregunta atributo por atributo.
+
+Comportamiento:
+La disponibilidad de marcas debe limitarse a TOTAL_CONOCIMIENTO o al conjunto definido por el estudio. Si el requisito afecta categorías dentro de Rp, se aplican showAnswers/hideAnswers. Si la implementación modela las marcas como iteraciones, se aplica filterIterations.
+
+128.2 ME / BARCON: barreras por marca
+Situación:
+Preguntar razones o barreras únicamente para marcas del FLAGCS_SET de consideración.
+
+Criterio estructural:
+- Si se pregunta marca por marca con varias razones: loop exterior de marcas + RM de barreras.
+- Si se pregunta barrera por barrera con varias marcas: loop de barreras + RM de marcas.
+- La orientación debe seguir la experiencia requerida y el dato analítico esperado.
+- “Otro, ¿cuál?” requiere field asociado cuando existe captura abierta.
+
+129. FILTROS DE SERVICIOS Y EMPRESAS
+
+129.1 X1 → X2
+Situación:
+X1 identifica servicios utilizados. X2 pregunta la empresa proveedora solo para servicios con X1 = Sí.
+
+Referente:
+OSM.Survey.X2.addEventListener('onBeforeNavigateTo', function(e){
+    var arr = [];
+    s.X1.getVisibleIterations().forEach(function(it){
+        if (it.Rp.isAnswerSelected('_1')) {
+            arr.push(it.get('objectName'));
+        }
+    });
+    e.sourceElement.filterIterations(arr.join(','));
+});
+
+Variables derivadas indicadas:
+- CLIENTE CLARO TOTAL: código 1 en al menos una iteración aplicable de X2.
+- NO CLIENTE CLARO: clasificación según la regla funcional aprobada; debe evitarse una definición ambigua con “y/o” si existen combinaciones mixtas.
+- CLIENTE CLARO PREPAGO: código 1 en X2A.
+- CLIENTE CLARO POSTPAGO: código 1 en X2B.
+- CLIENTE CLARO HOGAR: código 1 en X2C, X2D o X2E.
+
+Alerta:
+La definición de NO CLIENTE CLARO debe aclarar si significa “ningún servicio con Claro” o “al menos un servicio con otra empresa”. Ambas reglas producen universos diferentes.
+
+129.2 S1 → S2 por servicio
+Situación:
+S2 pregunta proveedor únicamente para servicios seleccionados en S1.
+
+Referente:
+OSM.Survey.S2.addEventListener('onBeforeNavigateTo', function(e){
+    e.sourceElement.filterIterations(s.S1.getAnswers());
+    OSM.Survey.setInsert('insert3', '');
+    OSM.Survey.S2.getIteration('_3').setInsert('insert3', ' (Gas por red)');
+});
+
+Grabación por iteración:
+OSM.Survey.S2.get('protoIteration').S2.addEventListener('onEntrance', function(e){
+    var iter = e.sourceElement.parent().get('objectName');
+    var xID = OSM.Survey.SHELL_CHAINID.getComment();
+    OSM.Survey.startSilentAudioRecording(xID + 'S2' + iter + ')');
+});
+
+OSM.Survey.S2.get('protoIteration').S2.addEventListener('onNext', function(e){
+    OSM.Survey.stopSilentAudioRecording();
+});
+
+Criterio:
+En una grabación por iteración, el nombre debe incorporar pregunta e iteración para evitar colisiones y mantener trazabilidad.
+
+130. VISIBILIDAD POR RESPUESTA PREVIA
+
+130.1 P2_2 → P2_3 → P2_4
+Situación:
+- P2_3 se muestra si P2_2 = Automóvil personal o de empresa.
+- P2_4 se muestra si P2_3 = Estacionamiento fuera del aeropuerto.
+
+Referentes:
+OSM.Survey.P2_3.addEventListener('onBeforeNavigateTo', function(e){
+    if (s.P2_2.isAnswerSelected('_1')) e.sourceElement.show();
+    else e.sourceElement.hide();
+});
+
+OSM.Survey.P2_4.addEventListener('onBeforeNavigateTo', function(e){
+    if (s.P2_3.isAnswerSelected('_4')) e.sourceElement.show();
+    else e.sourceElement.hide();
+});
+
+Criterio:
+Este patrón afecta la pregunta completa. Por lo tanto corresponde show/hide y no filterIterations.
+
+131. FILTRO DE ITERACIONES POR CÓDIGOS DE CONOCIMIENTO
+
+131.1 B10 a B12
+Situación:
+Evaluar confianza únicamente para empresas con códigos 2 a 5 en preguntas previas B2, B3 y B4.
+
+Referente:
+OSM.Survey.B10_B12.addEventListener('onBeforeNavigateTo', function(e){
+    var lst = '';
+    if (s.B2.isAnswerSelected('_2,_3,_4,_5')) lst = Lib.union(lst, '_2');
+    if (s.B3.isAnswerSelected('_2,_3,_4,_5')) lst = Lib.union(lst, '_3');
+    if (s.B4.isAnswerSelected('_2,_3,_4,_5')) lst = Lib.union(lst, '_4');
+    e.sourceElement.filterIterations(lst);
+});
+
+Criterio:
+Las claves agregadas a lst deben coincidir con los objectName del loop destino.
+
+132. VISIBILIDAD DE ATRIBUTOS SEGÚN ENTIDAD
+
+132.1 C1
+Situación:
+Cada empresa se evalúa con un subconjunto específico de atributos.
+
+Referente:
+OSM.Survey.C1.get('protoIteration').C1.addEventListener('onBeforeNavigateTo', function(e){
+    e.sourceElement.showAllIterations();
+
+    var empresa = e.sourceElement.get('parent').get('objectName');
+    if (empresa === '_2') {
+        e.sourceElement.hideIterations('_6,_7,_8,_10,_12');
+    }
+    if (empresa === '_3' || empresa === '_4') {
+        e.sourceElement.hideIterations('_1,_2,_5,_6,_10,_11,_12');
+    }
+});
+
+Criterio:
+Primero se restablecen todas las iteraciones y luego se oculta el subconjunto no aplicable. Este orden protege la reentrada y los cambios de respuesta.
+
+133. FILTROS DE EDAD Y TERMINACIÓN
+
+133.1 F10: edades de hijos
+Situación:
+- Número de hijos entre 1 y 15.
+- Edad de cada hijo entre 1 y 100.
+- Al menos un hijo debe tener entre 3 y 10 años inclusive.
+- Se derivan grupos de edad en F11.
+
+Estructura:
+- F10 como loop de hasta 15 hijos.
+- Rp long [1..100].
+- Se muestran únicamente las iteraciones correspondientes al número de hijos declarado.
+
+Referente de validación/routing:
+OSM.Survey.F10.addEventListener('onNext', function(e){
+    var c = 0;
+
+    e.sourceElement.getVisibleIterations().forEach(function(it){
+        var valor = parseInt(it.Rp.getComment());
+        if (valor >= 3 && valor <= 10) c++;
+
+        if (valor >= 0 && valor <= 2) s.F11.setAnswers('_1');
+        if (valor >= 3 && valor <= 5) s.F11.setAnswers('_2');
+        if (valor >= 6 && valor <= 10) s.F11.setAnswers('_3');
+        if (valor > 10) s.F11.setAnswers('_4');
+    });
+
+    if (c === 0) {
+        OSM.Survey.ELIMI.setComment(
+            e.sourceElement.get('objectName') +
+            '.No cumple filtro. Agradecer y terminar encuesta.'
+        );
+        OSM.Survey.get('navigator').goTo(OSM.Survey.ELIMI);
+    }
+});
+
+Alerta técnica:
+Si F11 debe conservar varios grupos de edad simultáneamente, su cardinalidad debe admitir selección múltiple y la asignación debe acumular mediante unión. Si F11 es RU, llamadas sucesivas a setAnswers pueden sobrescribir clasificaciones anteriores.
+
+134. CONTROL DE CALIDAD DE CORRESPONDENCIA
+
+134.1 S1 desalineado
+Situación observada:
+El wording del cuestionario sobre reacción ante terremoto no coincide con el fragmento MDD identificado como S1, que evalúa aprobación de gobernadores.
+
+Tratamiento obligatorio:
+- Registrar inconsistencia.
+- No fusionar ni corregir por intuición.
+- Verificar ID, wording, categorías y fuente original.
+- No usar el fragmento como patrón semántico.
+
+134.2 P2_2 y codificación de “Otro”
+Situación observada:
+El cuestionario presenta “Otro” con código 9, mientras el fragmento MDD usa _6/value 6.
+
+Tratamiento:
+Debe verificarse contra la fuente autorizada. La estructura no debe promoverse como referente de códigos hasta resolver la discrepancia.
+
+135. REGLAS NUEVAS DERIVADAS DE LOS CASOS
+
+135.1 Regla de orientación de matrices
+Antes de construir una matriz compleja, determinar si la unidad que debe recorrerse es:
+- marca;
+- atributo;
+- posición;
+- iniciativa;
+- servicio;
+- producto;
+- empresa;
+- driver.
+
+La orientación define qué elemento será loop y qué elemento será categoría o field.
+
+135.2 Regla de sets dinámicos
+Cuando el cuestionario mencione TOTAL_CONOCIMIENTO, FLAGCS_SET, SET_CONSIDERACION o listas equivalentes:
+1. identificar si es variable, pregunta, lista o flag derivado;
+2. verificar el formato devuelto por getAnswers();
+3. comprobar que sus IDs coincidan con el destino;
+4. aplicar filtro en el nivel correcto;
+5. restablecer el dominio antes de refiltrar si puede existir reentrada.
+
+135.3 Regla de autocompletado
+Autocompletar una respuesta solo cuando:
+- el cuestionario lo ordena explícitamente;
+- existe una única alternativa o iteración válida;
+- el valor asignado es inequívoco;
+- el dato autocompletado queda almacenado antes de ocultar el nodo.
+
+Caso corroborado:
+SOW con una sola marca elegible → asignar 100 y ocultar.
+
+135.4 Regla de templates y layouts custom
+Propiedades como _Osm_QuestionLayoutID = 10 y templates como ClosenessSliderTemplate son dependientes de plataforma. Deben copiarse únicamente cuando:
+- el recurso existe;
+- la plantilla del proyecto lo soporta;
+- la escala y el wording coinciden con el caso.
+
+135.5 Regla de lógica repetitiva por sets
+Cuando la misma operación se aplica a SET1…SET11, la equivalencia funcional puede documentarse como patrón común. No obstante, cualquier refactorización a una función reusable debe probar que el API permite resolver los nodos dinámicamente sin alterar ejecución o trazabilidad.
+
+135.6 Regla de variables de cuota o control
+Variables como CUOTA_VERSION, CLIENTE, flags de consideración y grupos de edad deben:
+- declararse con dominio explícito;
+- diferenciarse de la fuente;
+- recibir valor después de la captura relevante;
+- conservar trazabilidad;
+- permanecer readOnly/ocultas cuando sean exclusivamente técnicas.
+
+135.7 Regla de terminación
+Antes de navegar a ELIMI:
+1. conservar la respuesta fuente;
+2. asignar flags o recodes necesarios;
+3. registrar un motivo interpretable;
+4. ejecutar la navegación.
+
+135.8 Regla de inconsistencias internas de referentes
+Si un fragmento incluye llaves, paréntesis o cierres de evento incompletos, se conserva como evidencia conceptual, pero no debe copiarse como código ejecutable hasta completar y validar su sintaxis.
+
+136. NUEVOS CASOS INCORPORADOS AL ÍNDICE RÁPIDO
+
+- MÁX. 3 RESPUESTAS → categorical [1..3].
+- BACKCHECK → grabación silenciosa en onEntrance y detención en onNext, si el proyecto lo confirma.
+- MOSTRAR TARJETA → _Osm_HiddenComment cuando es instrucción separada.
+- Empresa conocida → filtrar iteraciones de baterías posteriores.
+- Empresa × driver → nested loops.
+- Primera a tercera mención → loop de posiciones + validación de no repetición cuando aplique.
+- Conocimiento Sí → habilitar detalle en la misma fila o filtrar loop posterior.
+- Códigos 4, 5 o 6 → clasificación CLIENTE y filtro de marcas usuarias.
+- Porcentajes por marca → long [1..100] + validación transversal de suma 100.
+- Única marca elegible → autocompletar 100 y ocultar.
+- Consideration set → filtrar iteraciones del slider o batería por marca.
+- MAXDIFF → versión fija de diseño + reordenamiento por set + validación Más/Menos distintos.
+- Servicio seleccionado → filtrar iteraciones del proveedor.
+- Pregunta dependiente simple → show/hide.
+- Atributos específicos por empresa → showAllIterations y luego hideIterations.
+- Al menos un hijo entre 3 y 10 → validación transversal y routing.
+- Códigos o wordings desalineados → registrar inconsistencia y no generalizar.
+
+137. TRAZABILIDAD DE ESTA AMPLIACIÓN
+
+Los nuevos referentes se integran en las mismas cuatro capas de la base:
+1. Cuestionario: indicaciones, wording, tablas, filtros y reglas.
+2. MDD: cardinalidades, listas, loops, nested loops, fields, grids, escalas, rangos y variables derivadas.
+3. Lógica OSM: filtros, validaciones, recodes, navegación, inserts, autocompletado y templates.
+4. Shell: BACKCHECK, grabación silenciosa, SHELL_CHAINID y controles operativos.
+
+La ampliación no elimina ni reemplaza los estándares anteriores. Cuando exista conflicto, prevalece la evidencia directa del estudio y la regla de no inventar comportamiento.
+
+FIN DE LA AMPLIACIÓN TÉCNICA V2.1
+
 
 FIN DE LA BASE DE CONOCIMIENTO CONSOLIDADA
