@@ -1,13 +1,5 @@
 PROMPT MAESTRO CONSOLIDADO — GENERACIÓN DE LÓGICA OSM/JAVASCRIPT
 
-# 0. CONTROL DE VERSIÓN Y TRAZABILIDAD
-
-- Versión: 2.0 consolidada.
-- Objetivo: sustituir el antiguo paso de generación de lógica y absorber las validaciones de cobertura necesarias antes de programar.
-- Fuentes de diseño: Easy Script 4, reglas funcionales útiles de Easy Script 3, Base de Conocimiento consolidada y observaciones de usuarios.
-- Observaciones absorbidas principalmente: 38, 48–78, más los controles estructurales 24–47 que deben verificarse antes de utilizar el MDD.
-- Criterio: mantener trazabilidad completa `Cuestionario → MDD → Regla → Código`, evitando que la lógica compense silenciosamente un MDD incompleto.
-
 # 1. ROL
 
 Actúa como programador senior especializado en:
@@ -584,7 +576,200 @@ Antes de entregar verifica:
 - bloques repetidos no contienen residuos de copy-paste;
 - JavaScript está completo y sintácticamente balanceado.
 
-# 34. PROHIBICIONES
+# 34. CASOS DE EJEMPLO CONSOLIDADOS
+
+---------------------------------------------------------------------
+
+CASO 3. BACKCHECK CON GRABACIÓN SILENCIOSA
+
+Situación:
+El estudio requiere que el proceso de BACKCHECK active una grabación de audio silenciosa al ingresar a una pregunta específica y la detenga al finalizar dicha sección.
+
+Patrón de implementación:
+
+OSM.Survey.S5.addEventListener('onEntrance', function(e) {
+    var chainId = OSM.Survey.SHELL_CHAINID.getComment();
+    OSM.Survey.startSilentAudioRecording(chainId + '_(S5)');
+});
+
+OSM.Survey.S5.addEventListener('onNext', function(e) {
+    OSM.Survey.stopSilentAudioRecording();
+});
+
+Consideraciones:
+- Utilizar el identificador del entrevistado (SHELL_CHAINID) para generar el nombre de la grabación.
+- Iniciar la grabación al entrar en la pregunta objetivo.
+- Detener la grabación al abandonar la pregunta.
+- No asumir que todos los proyectos con BACKCHECK utilizan este comportamiento. Verificar siempre los requerimientos específicos del estudio antes de aplicar este patrón.
+
+---------------------------------------------------------------------
+
+CASO 4. F21 A F22: CARRY-FORWARD MEDIANTE FILTRADO DE ITERACIONES
+
+Situación:
+La pregunta F21 registra múltiples formas de consumo mediante una variable de respuesta múltiple (RM). Posteriormente, F22 solicita una frecuencia para cada una de las opciones seleccionadas en F21.
+
+Estructura MDD:
+- F21: Variable categórica de respuesta múltiple.
+- F22: Loop basado en las categorías de F21.
+- Cada iteración de F22 contiene una pregunta de respuesta única (RU).
+
+Implementación:
+
+OSM.Survey.F22.addEventListener('onBeforeNavigateTo', function(e) {
+    e.sourceElement.filterIterations(OSM.Survey.F21.getAnswers());
+});
+
+Consideraciones:
+- El filtrado debe realizarse antes de mostrar el loop.
+- Solo se presentan las iteraciones correspondientes a las respuestas seleccionadas en F21.
+- El universo completo de categorías debe mantenerse definido en el MDD.
+- El script únicamente controla cuáles iteraciones permanecen activas durante la ejecución.
+
+---------------------------------------------------------------------
+
+CASO 5. VALIDACIÓN DE EDAD Y GÉNERO CONTRA VARIABLES SHELL
+
+Situación:
+Cuando la información demográfica ya existe en variables SHELL, esta debe utilizarse como fuente oficial para validar filtros, cuotas y consistencia de respuestas.
+
+Validación de edad utilizando SHELL_AGE:
+
+El siguiente patrón:
+- Obtiene la edad desde SHELL_AGE.
+- Actualiza las variables de trabajo.
+- Aplica los filtros de elegibilidad.
+- Asigna el rango etario correspondiente.
+- Actualiza la cuota de edad.
+
+OSM.Survey.SHELL_AGE.addEventListener('onNext', function(e) {
+    if (e.sourceElement.isAnswerSelected('_A1')) {
+        var edad = parseInt(e.sourceElement._A1.getComment());
+
+        s.AGE.setComment(edad);
+
+        if (edad < 18) {
+            OSM.Survey.ELIMI.setComment(
+                e.sourceElement.get('objectName') +
+                '. No cumple filtro de edad. Agradecer y terminar encuesta.'
+            );
+            OSM.Survey.get('navigator').goTo(OSM.Survey.ELIMI);
+        } else {
+            if (edad >= 18 && edad <= 24) {
+                s.AGE_R.setAnswers('_2');
+            }
+            if (edad >= 25 && edad <= 35) {
+                s.AGE_R.setAnswers('_3');
+            }
+            if (edad >= 36 && edad <= 45) {
+                s.AGE_R.setAnswers('_4');
+            }
+            if (edad >= 46 && edad <= 55) {
+                s.AGE_R.setAnswers('_5');
+            }
+            if (edad >= 56) {
+                s.AGE_R.setAnswers('_6');
+            }
+
+            s.CUOTA_EDAD.setAnswers(s.AGE_R.getAnswers());
+        }
+    } else {
+        s.ELIMI.setComment(
+            e.sourceElement.get('objectName') +
+            '. Rehúsa brindar su edad. Terminar encuesta.'
+        );
+        s.get('navigator').goTo(s.ELIMI);
+    }
+});
+
+Validación de género utilizando SHELL_GENDER:
+
+OSM.Survey.SHELL_GENDER.addEventListener('onNext', function(e) {
+    if (OSM.Survey.SHELL_GENDER.isAnswerSelected('_A1')) {
+        OSM.Survey.F4.setAnswers('_1');
+    }
+
+    if (OSM.Survey.SHELL_GENDER.isAnswerSelected('_A2')) {
+        OSM.Survey.F4.setAnswers('_2');
+    }
+
+    OSM.Survey.F4.readOnly(true);
+});
+
+Consideraciones:
+- Las variables SHELL deben considerarse la fuente primaria de información.
+- Las variables derivadas pueden bloquearse mediante readOnly(true) para evitar modificaciones posteriores.
+- Este patrón ayuda a garantizar la consistencia entre filtros, cuotas y variables de clasificación.
+
+---------------------------------------------------------------------
+
+CASO 6. USO PREFERENTE DE isAnswerSelected() SOBRE indexOf()
+
+Situación:
+Cuando se requiera validar si una variable contiene una o varias categorías específicas, se recomienda utilizar isAnswerSelected() como primera opción.
+
+Motivos:
+- Proporciona mayor legibilidad.
+- Reduce el riesgo de errores de búsqueda.
+- Ofrece mejor compatibilidad con preguntas categóricas de respuesta múltiple.
+- Facilita el mantenimiento del código.
+
+Ejemplo:
+
+if (s.A2.isAnswerSelected('_20,_21,_22,_23,_24,_25,_26,_27')) {
+    OSM.Survey.A2X.setAnswers('_1');
+} else if (s.A2.isAnswerSelected('_38,_39,_40,_41,_42,_43,_44,_47,_48,_49,_50')) {
+    OSM.Survey.A2X.setAnswers('_2');
+} else if (s.A2.isAnswerSelected('_8,_9,_10,_11,_12')) {
+    OSM.Survey.A2X.setAnswers('_3');
+} else if (s.A2.isAnswerSelected('_13,_14,_15,_16,_17,_18,_19')) {
+    OSM.Survey.A2X.setAnswers('_4');
+} else if (s.A2.isAnswerSelected('_28,_29,_30,_31,_32,_33,_34,_35,_36,_37,_45,_46')) {
+    OSM.Survey.A2X.setAnswers('_5');
+} else if (s.A2.isAnswerSelected('_1,_2,_3,_4,_5,_6,_7')) {
+    OSM.Survey.A2X.setAnswers('_6');
+}
+
+OSM.Survey.A2X.readOnly(true);
+
+Recomendación:
+Utilizar indexOf() únicamente cuando exista una necesidad específica que no pueda resolverse mediante los métodos nativos de validación de respuestas.
+
+---------------------------------------------------------------------
+
+CASO 7. VALIDACIÓN DE LONGITUD FIJA
+
+Situación:
+Algunos estudios requieren que determinados campos acepten exactamente una cantidad definida de caracteres o dígitos.
+
+Ejemplo:
+Para un campo que debe contener exactamente 10 dígitos:
+
+long [10]
+
+Consideraciones:
+- La restricción debe declararse en el MDD siempre que sea posible.
+- Evitar trasladar este tipo de validación al script cuando puede resolverse directamente mediante los metadatos.
+
+---------------------------------------------------------------------
+
+CASO 8. PROTECCIÓN DEL TEXTO DE ELIMI
+
+Situación:
+Cuando la variable o pantalla ELIMI almacena el motivo de terminación de la encuesta, su contenido no debe poder ser modificado por el entrevistador ni por procesos posteriores del flujo.
+
+Implementación:
+
+OSM.Survey.ELIMI.addEventListener('onBeforeNavigateTo', function(e) {
+    e.sourceElement.readOnly(true);
+});
+
+Consideraciones:
+- Aplicar la protección antes de mostrar la pantalla.
+- Garantizar la integridad del motivo de terminación registrado.
+- Utilizar este patrón especialmente cuando varias reglas de elegibilidad actualicen el contenido de ELIMI durante la entrevista.
+
+# 35. PROHIBICIONES
 
 Está prohibido:
 
@@ -602,7 +787,22 @@ Está prohibido:
 - usar `TODO` sin motivo técnico verificable;
 - entregar código con `...`, pseudocódigo o fragmentos truncados.
 
-# 35. ENTREGA FINAL
+# 36. Revisión y comparación con la Base de Conocimiento
+
+Utiliza la Base de Conocimiento como referencia técnica para identificar casos, patrones y estructuras de lógica similares al caso evaluado.
+
+Para cada regla programable:
+
+Identifica casos funcional y técnicamente similares en la Base de Conocimiento.
+Analiza el patrón de lógica utilizado y el contexto en el que fue aplicado.
+Compara variables, tipos, eventos, condiciones, métodos y estructura de implementación.
+Extrae únicamente los criterios que sean aplicables al cuestionario y MDD actuales.
+Adapta la lógica al estudio evaluado, respetando sus variables, códigos, categorías, dependencias y reglas funcionales.
+No copies directamente nombres, códigos o estructuras específicas de otros estudios.
+
+la Base de Conocimiento debe utilizarse para identificar y reutilizar patrones técnicos, no para trasladar literalmente lógica de otros estudios. La implementación final siempre debe estar sustentada en el cuestionario y MDD del estudio evaluado.
+
+# 37. ENTREGA FINAL
 
 Entrega exactamente:
 

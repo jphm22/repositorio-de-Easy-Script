@@ -1,10 +1,6 @@
 BASE DE CONOCIMIENTO CONSOLIDADA
 CUESTIONARIOS, MDD, iFIELD Y OSM
 
-Versión consolidada: 2.1
-Fecha: 22 de septiembre de 2026
-Formato: texto plano
-
 PROPÓSITO
 
 Este documento consolida los estándares conceptuales, criterios de construcción y casos de referencia contenidos en:
@@ -28,13 +24,11 @@ La analogía con otros estudios sirve como referencia, pero la evidencia del cas
 
 Base de conocimiento técnica de estándares y criterios conceptuales para Cuestionarios, Lógica, MDD, iField y OSM
 
-Versión: 1.0  
-Fecha de consolidación: 21 de septiembre de 2026  
 Finalidad: referencia conceptual y técnica reutilizable para analizar nuevos estudios, justificar decisiones de construcción y mantener trazabilidad entre cuestionario, MDD y lógica de ejecución en iField/OSM.
 
 0. Propósito y alcance
 
-Esta base de conocimiento consolida criterios observados y documentados en los archivos de cuestionario, lógica y MDD de las familias BHT/MSU/CRE, CEX, INN y OBV/PA/TRENDS/CPR, junto con los documentos Analizador Lógico de Cuestionarios (1), Base_Conocimiento_Consolidada_Cuestionarios_MDD_iField_OSM, Base_Conocimiento_Tecnica_Criterios_MDD, Metatool Ifield V3 1 (1) y Ejemplo de Casos.TXT.
+Ejemplo de Casos.TXT.
 
 El objetivo no es resumir esos archivos, sino convertir su evidencia conjunta en un sistema de criterios que permita responder, para un nuevo estudio:
 
@@ -1781,24 +1775,6 @@ _Osm_HiddenComment = "<font color='Cyan'>(MOSTRAR TARJETA S8)</font>"
 
 La indicación informa al entrevistador. Por sí sola no crea filtros ni saltos.
 
----------------------------------------------------------------------
-CASO 3. BACKCHECK CON GRABACIÓN
-
-Situación:
-El estudio confirma que BACKCHECK activa grabación silenciosa.
-
-Patrón de ejecución:
-
-OSM.Survey.S5.addEventListener('onEntrance', function(e) {
-    var chainId = OSM.Survey.SHELL_CHAINID.getComment();
-    OSM.Survey.startSilentAudioRecording(chainId + '_(S5)');
-});
-
-OSM.Survey.S5.addEventListener('onNext', function(e) {
-    OSM.Survey.stopSilentAudioRecording();
-});
-
-El patrón no debe aplicarse automáticamente en proyectos donde BACKCHECK tenga otra convención.
 
 ---------------------------------------------------------------------
 CASO 4. M5, MATRIZ RU POR FILA
@@ -1882,22 +1858,6 @@ Conocimiento -> detalle.
 Uso -> satisfacción.
 Selección -> evaluación.
 
----------------------------------------------------------------------
-CASO 9. F21 A F22, CARRY-FORWARD
-
-Situación:
-F21 registra formas de consumo mediante RM. F22 pregunta frecuencia únicamente para las formas elegidas.
-
-MDD:
-F21 es categorical múltiple.
-F22 es un loop con una respuesta RU de frecuencia por iteración.
-
-Lógica:
-OSM.Survey.F22.addEventListener('onBeforeNavigateTo', function(e) {
-    e.sourceElement.filterIterations(OSM.Survey.F21.getAnswers());
-});
-
-La fuente define el subconjunto activo; el universo completo permanece declarado en el MDD.
 
 ---------------------------------------------------------------------
 CASO 10. SUMA DE 100 EN LOOP
@@ -2045,20 +2005,10 @@ Lógica OSM
 
 OSM.Survey.P6_0.addEventListener('onBeforeNavigateTo', function(e){
 
-    var lst = fun.union(
-        s.P3.getAnswers(),
-        s.P4.getAnswers()
-    );
+    var lst = fun.union( s.P3.getAnswers(),s.P4.getAnswers() );
 
-    lst = fun.union(
-        lst,
-        s.P6.getAnswers()
-    );
-
-    lst = fun.substract(
-        lst,
-        "_98,_99"
-    );
+    lst = fun.union( lst, s.P6.getAnswers() );
+    lst = fun.substract( lst, "_98,_99");
 
     e.sourceElement.filterIterations(lst);
     e.sourceElement.set("skipHeaderSlide", true);
@@ -2096,6 +2046,7 @@ BRAND_CLOSENESS loop
         };
     );
 );
+
 
 ======================================================================
 REGLAS FINALES DE USO

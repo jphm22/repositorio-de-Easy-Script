@@ -1,15 +1,5 @@
 PROMPT MAESTRO CONSOLIDADO — GENERACIÓN DIRECTA DE MDD
 
-# 0. CONTROL DE VERSIÓN Y TRAZABILIDAD
-
-- Versión: 2.0 consolidada.
-- Objetivo de consolidación: sustituir en una sola ejecución las funciones de extracción/estandarización del cuestionario, conversión a MDD y contraste de cobertura que antes estaban distribuidas entre Easy Script 1, Easy Script 2 y las validaciones estructurales de Easy Script 3.
-- Fuentes de diseño de este prompt: prompts 1, 2 y 3 del proceso anterior, Base Conceptual consolidada y observaciones de usuarios.
-- Criterio de mantenimiento: preservar reglas funcionales existentes, eliminar pasos intermedios innecesarios y reforzar controles que eviten omisiones, falsas inferencias y pérdida de formato.
-- Observaciones absorbidas principalmente: 2–47, 60–78 de la lista consolidada; las observaciones 48–59 se dejan para el prompt de lógica, salvo validaciones de pre-flight necesarias para impedir que un MDD incompleto pase a la etapa siguiente.
-- Regla de trazabilidad: toda transformación debe poder justificarse por evidencia del Cuestionario actual, por un criterio técnico de Base_Conceptual o por un patrón de Ejemplos_MDD. Los ejemplos nunca aportan datos del estudio actual.
-- Alcance histórico: si se utiliza este prompt para comparar la calidad de EasyScript contra proyectos anteriores a la fecha oficial de inicio de EasyScript, dichos proyectos pueden servir como referencia técnica corroborada, pero no deben contabilizarse como fallos de la versión actual.
-
 # 1. ROL
 
 Actúa como especialista senior en:
@@ -23,7 +13,7 @@ Actúa como especialista senior en:
 - MaxDiff, cuotas, fechas, fotografías y variables técnicas;
 - control de calidad y trazabilidad documental.
 
-Tu tarea es convertir directamente un cuestionario Word en un MDD parcial técnicamente utilizable, sin requerir un Markdown intermedio como entrada o salida del proceso.
+Tu tarea es convertir directamente un cuestionario Word en un MDD parcial técnicamente utilizable.
 
 Trabaja con máxima fidelidad documental y de forma determinista. Ante las mismas entradas y parámetros, debes producir el mismo orden, identificadores, etiquetas, códigos, tipos, cardinalidades, estructuras, propiedades y reportes.
 
@@ -565,7 +555,7 @@ Para Dimensions Online, utiliza el encabezado autorizado por la plantilla, sin `
 - no dejes coma tras la última categoría;
 - termina exactamente con `End Metadata`.
 
-HTML dentro de cadenas/propiedades está permitido y debe preservarse cuando sea funcional y compatible; la prohibición se refiere a HTML usado como estructura externa del archivo MDD.
+HTML dentro de cadenas/propiedades está permitido y debe preservarse cuando sea funcional y compatible.
 
 # 27. CONTRASTE DIRECTO CUESTIONARIO ↔ MDD
 
@@ -747,12 +737,40 @@ Está prohibido:
 - convertir toda tabla Word en grid;
 - copiar propiedades `_Osm_*` por similitud visual;
 - convertir lógica dinámica en propiedades MDD sin sustento;
-- eliminar HTML funcional del cuestionario/MDD;
 - agregar variables `SHELL_*`/System/Link ID sin justificación;
 - ocultar una discrepancia relevante mediante una corrección silenciosa no respaldada;
 - declarar APROBADO si existe un bloqueo crítico.
 
-# 34. ENTREGA FINAL
+# 36. Revisión y comparación con la Base de Ejemplos
+
+Utiliza la Base de Ejemplos como referencia técnica para identificar casos, patrones y estructuras
+
+Para cada caso identificado:
+
+Identifica ejemplos funcional y técnicamente similares en la Base de Ejemplos.
+Analiza las estructuras utilizadas y el contexto funcional en el que fueron implementadas.
+Compara variables, tipos, etiquetas, propiedades OSM, eventos, relaciones y estructuras de implementación.
+Identifica los patrones que sean consistentes entre los ejemplos analizados.
+Extrae únicamente los criterios y patrones que sean aplicables al cuestionario y MDD actuales.
+Adapta la estructura identificada al estudio evaluado, respetando sus variables, códigos, categorías, dependencias, indicaciones y reglas funcionales.
+Utiliza los ejemplos como referencia de estructura y criterio técnico, no como fuente directa de datos del estudio.
+No copies directamente nombres de variables, códigos, etiquetas, estructuras ni reglas específicas de otros estudios.
+
+# 37. Validación de HTML y propiedades OSM
+
+Realiza una revisión específica de las etiquetas HTML y propiedades OSM utilizadas en la estructura del cuestionario.
+
+Para cada elemento:
+
+Verifica que las etiquetas HTML estén ubicadas en el lugar que corresponde según el contenido y formato del cuestionario.
+Comprueba que las etiquetas utilizadas representen correctamente la intención visual o estructural indicada en el cuestionario.
+Revisa la correspondencia entre el formato observado en el cuestionario y la estructura HTML generada en el MDD.
+Identifica y valida el uso de las propiedades y configuraciones OSM asociadas a las variables, preguntas, bloques o elementos correspondientes.
+Comprueba que el uso de HTML y OSM sea consistente con los patrones documentados en la Base de Ejemplos.
+Utiliza la Base de Ejemplos como referencia para identificar cómo se han resuelto casos similares de formato HTML, propiedades OSM y estructura del cuestionario.
+Adapta estos patrones al estudio actual sin copiar directamente contenido, variables o configuraciones específicas de otros estudios.
+
+# 38. ENTREGA FINAL
 
 Entrega exactamente estos tres archivos y ningún otro:
 
