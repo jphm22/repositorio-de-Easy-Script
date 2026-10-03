@@ -241,33 +241,22 @@ export const REPOSITORY_CONFIG = Object.freeze({
           "description": "Archivos cargados desde su ruta real.",
           "resources": [
             {
-              "id": "prompt-00-base-conceptual-txt",
-              "title": "00. Base conceptual",
-              "type": "prompt",
-              "summary": "Criterios conceptuales del flujo EasyScript.",
-              "virtualPath": "Prompt/00_Base_Conceptual.txt",
-              "tags": [
-                "conceptual",
-                "estándares"
-              ]
-            },
-            {
-              "id": "prompt-01-generacion-mdd-txt",
+              "id": "prompt-01-generacion-mdd-md",
               "title": "01. Generación MDD",
               "type": "prompt",
               "summary": "Generación de estructura MDD.",
-              "virtualPath": "Prompt/01_Generacion_MDD.txt",
+              "virtualPath": "Prompt/01_GenerarMDD.md",
               "tags": [
                 "mdd",
                 "generación"
               ]
             },
             {
-              "id": "prompt-02-generacion-logica-txt",
+              "id": "prompt-02-generacion-logica-md",
               "title": "02. Generación de lógica",
               "type": "prompt",
               "summary": "Generación de lógica JavaScript para OSM.",
-              "virtualPath": "Prompt/02_Generacion_Logica.txt",
+              "virtualPath": "Prompt/02_GenerarLogica.md",
               "tags": [
                 "javascript",
                 "lógica"
