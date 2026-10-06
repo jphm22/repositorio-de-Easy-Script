@@ -89,7 +89,7 @@ Usa estos valores cuando no se indique otra cosa. Si el proyecto proporciona otr
 | `SEPARADOR_CAPTURA_ASOCIADA` | `_C_` | Ejemplo: `_C_94` |
 | `LONGITUD_TEXTO_ABIERTO` | `200` | `text [0..200]`. Usa otra longitud solo si el cuestionario la especifica |
 | `FORMATO_HIDDENCOMMENT` | `<font color="Cyan">(TEXTO)</font>` | Para instrucciones de entrevistador en `_Osm_HiddenComment`, el color esta sujeto al formato del cuestionario |
-| `Etiquetas` | `""` | Verificar el manejo adecuado de las comillas para evitar errores de sintaxis en el mdd |
+| `Etiquetas` | `""` | Verificar el manejo adecuado de las comillas para evitar errores de sintaxis en el mdd y coloca las etiquetas igual a como estan en cuestionario |
 
 ---
 
@@ -159,7 +159,7 @@ Ejemplos: `P0.1` → `P0_1` · `1C` → `P1C` · `12C.1` → `P12C_1` · `E.EXAC
 - Identifica las etiquetas HTML presentes en el cuestionario o en la estructura técnica aplicable.
 - Conserva literalmente el HTML que forme parte del wording, instrucciones, saltos o formato funcional y sea compatible con el MDD/iField objetivo. No lo conviertas a Markdown.
 - No elimines `<br>`, `<b>`, `<strong>`, `<i>`, `<font>` u otras etiquetas funcionales solo por ser HTML.
-- Si el cuestionario solo contiene formato Word (negrita, saltos), tradúcelo a HTML únicamente con el patrón corroborado en la sección 7.
+- Si el cuestionario solo contiene formato Word (negrita, saltos), tradúcelo a HTML y toma como referencia los casos de la seccion 7 y del archivo de ejemplos MDD.
 - Preserva anidación y cierre correcto; escapa comillas internas de forma compatible con cadenas MDD sin alterar el HTML.
 - La comparación de escalas puede ignorar diferencias puramente de marcado al detectar igualdad, pero la salida preserva el formato funcional.
 
@@ -172,6 +172,79 @@ Ejemplos: `P0.1` → `P0_1` · `1C` → `P1C` · `12C.1` → `P12C_1` · `E.EXAC
 | Doble función | Informa al entrevistador y exige comportamiento | Modela ambos efectos sin duplicar innecesariamente el texto |
 
 `GRABAR` / `BACKCHECK` se conserva como indicación operativa; no se convierte por sí sola en lógica dentro del MDD.
+
+### 4.3.1 Fidelidad literal obligatoria de las etiquetas
+
+**PRINCIPIO DE BLOQUEO:** La etiqueta de cada variable, loop, grid, block, field, info o pregunta debe copiarse literalmente del cuestionario vigente.
+
+La etiqueta MDD NO es:
+- un resumen de la pregunta;
+- una descripción técnica de la estructura;
+- un nombre funcional del loop;
+- una interpretación del objetivo de la pregunta;
+- un título creado para facilitar la lectura;
+- una paráfrasis generada a partir del contenido.
+
+La etiqueta MDD SÍ debe contener el wording completo y visible de la
+pregunta, respetando:
+- redacción original;
+- signos de interrogación;
+- acentos;
+- mayúsculas y minúsculas;
+- referencias al producto o marca;
+- instrucciones visibles intercaladas;
+- textos entre paréntesis;
+- referencias a tarjetas;
+- inserts y placeholders documentados;
+- saltos de línea funcionales;
+- errores originales que no hayan sido corregidos explícitamente en el
+  cuestionario.
+
+**REGLA OBLIGATORIA:**
+
+ETIQUETA_MDD = WORDING_VISIBLE_COMPLETO_DEL_CUESTIONARIO
+
+Está prohibido reemplazar el wording por una etiqueta sintética como:
+
+P22 "Disposición de compra al precio real por formato"
+
+si el cuestionario contiene:
+
+P22. Según las siguientes alternativas, si le dijera que la nueva BONLE CRECIMIENTO en el formato de (ENCUESTADOR LEER FORMATO Y PRECIO) ¿Qué tan dispuesta estaría en comprarlo en la siguiente semana? (MOSTRAR TARJETA FORMATOS / MOSTRAR TARJETA P22)
+
+La declaración correcta debe conservar el contenido completo:
+
+P22 "Según las siguientes alternativas, si le dijera que la nueva BONLE CRECIMIENTO en el formato de (ENCUESTADOR LEER FORMATO Y PRECIO) ¿Qué tan dispuesta estaría en comprarlo en la siguiente semana? (MOSTRAR TARJETA FORMATOS / MOSTRAR TARJETA P22)"
+
+La estructura técnica seleccionada, como loop, grid, block, nested loop
+o variable simple, no autoriza a resumir ni modificar la etiqueta.
+
+Si una pregunta se convierte en loop:
+- la etiqueta del loop debe conservar el wording completo de la pregunta;
+- las iteraciones deben conservar las etiquetas específicas de las filas;
+- el field Rp puede tener etiqueta vacía únicamente cuando el wording completo ya se encuentra en el loop y la plantilla o el patrón técnico corroborado permite evitar la repetición;
+- si la plataforma requiere mostrar el wording dentro de Rp, debe repetirse literalmente, sin resumirlo.
+
+Las instrucciones de entrevistador se tratarán así:
+- si aparecen intercaladas dentro del wording, permanecen en la etiqueta;
+- si aparecen en una línea separada y están inequívocamente asociadas a la pregunta, pueden trasladarse a _Osm_HiddenComment;
+- el traslado a _Osm_HiddenComment no permite eliminar ni resumir el enunciado principal;
+- las instrucciones PROG no forman parte de la etiqueta, salvo que sean texto visible para el entrevistador o entrevistado.
+
+Cuando exista duda sobre dónde termina el wording:
+- conservar el texto completo antes que resumirlo;
+- registrar la duda en Control_QA.md;
+- no crear una etiqueta alternativa.
+
+**PROHIBICIONES EXPRESAS:**
+- No crear etiquetas como "Evaluación por formato".
+- No crear etiquetas como "Percepción de precio".
+- No crear etiquetas como "Disposición de compra".
+- No usar el título de la tabla como sustituto del enunciado.
+- No usar una descripción funcional construida por el modelo.
+- No corregir, abreviar, condensar, traducir o modernizar el wording.
+- No eliminar el nombre de la marca, producto, periodo, formato, precio, condición o referencia a tarjeta.
+- No reemplazar una pregunta por una etiqueta nominal.
 
 ## 4.4 Propiedades `_Osm_*`
 
@@ -1176,6 +1249,38 @@ El nombre `MDD_PARCIAL.txt` no autoriza omisiones conocidas: autocorrige todo lo
 - [ ] Variables de sistema no justificadas excluidas; `ELIMI` y `GRACIAS_ELIMI` presentes.
 - [ ] MDD sintácticamente balanceado y terminado en `End Metadata`.
 - [ ] `Control_QA.md` y `Resumen.md` concuerdan con `MDD_PARCIAL.txt`.
+
+**7 Gate obligatorio de correspondencia literal de etiquetas**
+
+Antes de entregar MDD_PARCIAL.txt, comparar cada etiqueta MDD contra el
+wording visible del cuestionario.
+
+Para cada variable, loop, grid, block, field e info, validar:
+
+- El texto sustantivo coincide literalmente con el cuestionario.
+- No se utilizó una paráfrasis.
+- No se utilizó un resumen semántico.
+- No se utilizó un título funcional creado por el generador.
+- Se conservaron marca, producto, periodo, formato, precio y contexto.
+- Se conservaron las instrucciones visibles intercaladas.
+- Se conservaron las referencias a tarjetas.
+- Se conservaron los inserts documentados.
+- No se eliminó ninguna oración del enunciado.
+- No se agregó información que no aparece en el cuestionario.
+
+**REGLA DE BLOQUEO:**
+
+Si la etiqueta MDD no coincide con el wording del cuestionario, la
+variable no puede aprobarse.
+
+El generador debe:
+1. reemplazar automáticamente la etiqueta resumida por el wording literal;
+2. volver a comparar la etiqueta con el cuestionario;
+3. registrar en Control_QA.md cualquier fragmento cuya lectura no sea
+   inequívoca.
+
+Una etiqueta técnicamente clara pero documentalmente resumida se considera
+una diferencia ALTA y debe corregirse antes de entregar el MDD.
 
 ---
 
