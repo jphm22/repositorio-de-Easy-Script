@@ -1409,7 +1409,111 @@ ut.reorder("LP", filtro, OSM.Survey, OSM.Survey);
 });
 ```
 
-### Caso 23 — Mostrar u ocultar una pregunta en la misma pantalla (`onInputChange`)
+### Caso 23 — Calculo de una fecha en intervalos para continuar terminar si es menor a 6 meses o mayor a 18 meses
+
+
+**Situación.** Terminar si es menor a 6 meses o mayor a 18 meses
+
+```js
+OSM.Survey.forS10_FECHA_NACIMIENTO.addEventListener('onNext', function(e) {
+
+    var defaultSubmitDateFormat = 'YYYY-MM-DD';
+
+    var fechaNacimiento = moment(
+        e.sourceElement.getComment(),
+        defaultSubmitDateFormat
+    );
+
+    if (String(fechaNacimiento) === 'Invalid date') {
+        OSM.Survey.ELIMI.setComment(
+            e.sourceElement.get('objectName') +
+            '. La fecha de nacimiento ingresada no es válida.'
+        );
+        OSM.Survey.get('navigator').goTo(OSM.Survey.ELIMI);
+    } else {
+        var edadMeses = parseInt(moment().diff(fechaNacimiento, 'months'));
+
+        OSM.Survey.forS10_EDAD_MESES.setComment(edadMeses);
+        OSM.Survey.forS10_EDAD_MESES.readOnly(true);
+
+        if (edadMeses < 6 || edadMeses > 18) {
+            OSM.Survey.ELIMI.setComment(
+                e.sourceElement.get('objectName') +
+                '. La edad del bebé es de ' + String(edadMeses) +
+                ' meses y no se encuentra dentro del rango permitido de 6 a 18 meses.'
+            );
+            OSM.Survey.get('navigator').goTo(OSM.Survey.ELIMI);
+        }
+    }
+});
+```
+
+### Caso 24 — Validacion de variable Fecha de nacimiento (FN)
+
+**Situación.** REGISTRE EN F2 EL NUMERO DE AÑOS CUMPLIDOS DE ACUERDO CON LA FECHA DE LA ENCUESTA Y LA FECHA DE NACIMIENTO (FN)
+
+```mdd
+    FN "FN. ¿Cuál es su fecha de Nacimiento?"
+        [
+            _Osm_QuestionLayoutID = 2,
+            _Osm_ContentRuleID = 18,
+            _Osm_CustomFunction = "checkAge"
+        ]
+    date ["1972-01-01" .. "2001-12-31"];
+```
+
+```js
+
+OSM.Survey.checkAge = function() {
+    OSM.NotificationSystem.removeAllNotifications();
+    var msje = "";    
+    var defaultSubmitDateFormat = "YYYY-MM-DD";
+    
+    date1 = moment(s.FN.getComment(), defaultSubmitDateFormat);
+    dateyear = moment().diff(date1, 'years', false);
+    var birthAge = parseInt(dateyear);
+    
+    if (birthAge !== parseInt(s.F2.getComment())) {
+        msje = "La edad no corresponde con la ingresada inicialmente: (" + s.F2.getComment() + ")";
+    }   
+    
+    if(msje !== "" && e.name !== 'onInputChange'){
+        return{
+            status:false,
+            message: msje
+        };
+    }else{
+        return{
+            status:true    
+        }; 
+    }  
+
+};
+
+OSM.Survey.FN.addEventListener('onNext', function(e){
+    if ( OSM.Survey.SHELL_RECORDING_CONFIRMATION.isAnswerSelected('_A1') )
+{ OSM.Survey.stopSilentAudioRecording(); } 
+
+var defaultSubmitDateFormat = "YYYY-MM-DD";
+    
+date1 = moment(e.sourceElement.getComment(), defaultSubmitDateFormat);
+dateyear = moment().diff(date1, 'years', false);
+
+if(dateyear !== parseInt(s.F2.getComment())){
+    OSM.Survey.get('navigator').goTo(OSM.Survey.Msj_gracias_terminar);
+}
+});
+
+OSM.Survey.FN.addEventListener('onEntrance', function(e){
+if (OSM.Survey.SHELL_RECORDING_CONFIRMATION.isAnswerSelected("_A1")) {
+    xID = OSM.Survey.SHELL_CHAINID.getComment();
+    OSM.Survey.startSilentAudioRecording(xID+"_FN");
+}
+});
+
+```
+
+### Caso 25 — Mostrar u ocultar una pregunta en la misma pantalla (`onInputChange`)
 
 
 **Situación.** Al marcar la opción 1 en ENCERRAR aparece en la misma pantalla la pregunta de confirmación ENCERRADA_CONF; con otra respuesta se oculta.
