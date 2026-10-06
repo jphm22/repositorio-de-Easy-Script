@@ -85,7 +85,7 @@ Usa estos valores cuando no se indique otra cosa. Si el proyecto proporciona otr
 | `IDIOMA_METADATA` | `es-PE` | |
 | `IGNORAR_TEXTO_TACHADO` | `SI` | |
 | `PREFIJO_ID_NUMERICO` | `P` | Se aplica cuando el ID visible empieza con número (`1C` → `P1C`), salvo otra indicación de la plantilla |
-| `PREFIJO_SIN_ID` | `SIN_CODIGO` | Genera `SIN_CODIGO_001`, `SIN_CODIGO_002`… |
+| `PREFIJO_SIN_ID` | `SIN_CODIGO` | Genera `SIN_CODIGO_001`, `SIN_CODIGO_002`, ... , revisar si el ID se encuentra en la revision visual antes de asignarle `SIN_CODIGO_`  |
 | `SEPARADOR_CAPTURA_ASOCIADA` | `_C_` | Ejemplo: `_C_94` |
 | `LONGITUD_TEXTO_ABIERTO` | `200` | `text [0..200]`. Usa otra longitud solo si el cuestionario la especifica |
 | `FORMATO_HIDDENCOMMENT` | `<font color="Cyan">(TEXTO)</font>` | Para instrucciones de entrevistador en `_Osm_HiddenComment`, el color esta sujeto al formato del cuestionario |
@@ -1161,6 +1161,7 @@ El nombre `MDD_PARCIAL.txt` no autoriza omisiones conocidas: autocorrige todo lo
 **6. Validaciones finales obligatorias.** Confirma internamente:
 
 - [ ] 100 % del cuestionario revisado, incluido contenido visual.
+- [ ] El orden en el que muestran las variables en el mdd parcial tienen que ser el mismo orden en el que se encuentra en el cuestionario.
 - [ ] Ninguna pregunta vigente omitida sin aparecer en QA.
 - [ ] Ninguna escala/opción omitida; ninguna categoría vacía espuria.
 - [ ] Ningún `__Cod` / `_C__Cod`.
@@ -2710,6 +2711,8 @@ Cuando exista diferencia entre la sección 7 y Ejemplos_MDD_CORREGIDO.md, preval
 
 ### Caso 30 — Idioma
 Se mantiene el idioma en el que se encuentra el cuestionario
+
+
 
 
 ## 7.6 Glosario mínimo
