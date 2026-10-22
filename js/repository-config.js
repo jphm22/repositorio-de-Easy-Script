@@ -242,10 +242,10 @@ export const REPOSITORY_CONFIG = Object.freeze({
           "resources": [
             {
               "id": "prompt-01-generacion-mdd-md",
-              "title": "01. Generación MDD",
+              "title": "01. Generación MDD (V6)",
               "type": "prompt",
-              "summary": "Generación de estructura MDD.",
-              "virtualPath": "Prompt/01_GenerarMDD.md",
+              "summary": "Cuestionario + ejemplos MDD → MDD parcial, control QA y resumen para lógica.",
+              "virtualPath": "Prompt/V6/01_GenerarMDD.md",
               "tags": [
                 "mdd",
                 "generación"
@@ -253,10 +253,10 @@ export const REPOSITORY_CONFIG = Object.freeze({
             },
             {
               "id": "prompt-02-generacion-logica-md",
-              "title": "02. Generación de lógica",
+              "title": "02. Generación de lógica (V6)",
               "type": "prompt",
-              "summary": "Generación de lógica JavaScript para OSM.",
-              "virtualPath": "Prompt/02_GenerarLogica.md",
+              "summary": "Cuestionario + MDD final + base de conocimiento → lógica OSM/JavaScript y control QA.",
+              "virtualPath": "Prompt/V6/02_GenerarLogica.md",
               "tags": [
                 "javascript",
                 "lógica"
@@ -264,10 +264,10 @@ export const REPOSITORY_CONFIG = Object.freeze({
             },
             {
               "id": "prompt-03-control-qa-txt",
-              "title": "03. Control QA",
+              "title": "03. Control QA (V6)",
               "type": "prompt",
-              "summary": "Validación y control de calidad.",
-              "virtualPath": "Prompt/03_Control_QA.txt",
+              "summary": "Auditoría de cuestionario, MDD final y lógica final con checklist de incidencias.",
+              "virtualPath": "Prompt/V6/03_Control_QA.md",
               "tags": [
                 "qa",
                 "auditoría"
